@@ -5,6 +5,9 @@ import { openai } from "@/lib/openai";
 import { generateRecipeImage } from "@/lib/nanoBanana";
 import { withErrorHandler } from "@/lib/apiWrapper";
 import { SYSTEM_PROMPT } from "@/lib/chefPrompt";
+import { parseLLMJson } from "@/lib/parseLLM";
+import { RecipeSchema } from "@/validation/recipeSchema";
+import { sanitizeRecipe } from "@/lib/sanitizeRecipe";
 
 const CHAT_MODEL = "gpt-4o-mini";
 const MAX_HISTORY = 20;
@@ -90,53 +93,70 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   });
 
   let createdRecipe = null;
-  try {
-    const parsed = JSON.parse(assistantMessage);
-    if (parsed?.title && typeof parsed.title === "string") {
-      createdRecipe = await prisma.recipe.create({
-        data: {
-          title: parsed.title,
-          description: parsed.description || "",
-          imageUrl: "/images/recipes/default.jpg",
-          prepTime: parsed.prepTime || parsed.prep_time || 0,
-          cookTime: parsed.cookTime || parsed.cook_time || 0,
-          servings: parsed.servings || 1,
-          calories: parsed.calories ?? null,
-          cuisine: parsed.cuisine ?? null,
-          dietaryTags: parsed.dietaryTags ?? parsed.dietary_tags ?? null,
-          userId: session.userId,
-          ingredients: {
-            create: Array.isArray(parsed.ingredients)
-              ? parsed.ingredients.map((ing: any) => ({
-                name: String(ing?.name || ""),
-                amount: String(ing?.amount || ""),
-                unit: String(ing?.unit || ""),
-              })) : [],
-          },
-        },
-        include: { ingredients: true },
-      });
 
+  const parsed = parseLLMJson(assistantMessage);
+
+  if (parsed !== null) {
+    const validation = RecipeSchema.safeParse(parsed);
+
+    if (validation.success) {
+      const sanitized = sanitizeRecipe(validation.data);
 
       try {
-        const imagePrompt =
-          parsed.imagePrompt || parsed.image_prompt || `A delicious ${parsed.title}`;
-        const imageUrl = await generateRecipeImage(imagePrompt);
-        await prisma.recipe.update({
-          where: { id: createdRecipe.id },
-          data: { imageUrl },
+        createdRecipe = await prisma.recipe.create({
+          data: {
+            title: sanitized.title,
+            description: sanitized.description || "",
+            imageUrl: "/images/recipes/default.jpg",
+            prepTime: sanitized.prepTime,
+            cookTime: sanitized.cookTime,
+            servings: sanitized.servings,
+            calories: sanitized.calories,
+            cuisine: sanitized.cuisine,
+            dietaryTags: sanitized.dietaryTags ? sanitized.dietaryTags.join(", ") : null,
+            userId: session.userId,
+            ingredients: {
+              create: sanitized.ingredients.map((ing) => ({
+                name: ing.name,
+                amount: ing.amount,
+                unit: ing.unit,
+              })),
+            },
+          },
+          include: { ingredients: true },
         });
-        createdRecipe.imageUrl = imageUrl;
-      } catch (err) {
-        console.error("Image generation failed:", err);
+
+        try {
+          const imagePrompt = sanitized.imagePrompt;
+          const imageUrl = await generateRecipeImage(imagePrompt);
+          await prisma.recipe.update({
+            where: { id: createdRecipe.id },
+            data: { imageUrl },
+          });
+          createdRecipe.imageUrl = imageUrl;
+        } catch (err) {
+          console.error("Recipe image generation failed:", err);
+        }
+      } catch (dbErr) {
+        console.error("Failed to write sanitized recipe to database:", dbErr);
       }
+    } else {
+      console.warn(
+        "Recipe validation failed for assistant message. Issues:",
+        JSON.stringify(validation.error.issues, null, 2)
+      );
     }
-  } catch (err) {
-    console.error("Failed to parse assistant JSON:", err);
+  } else {
+    if (assistantMessage.trim().startsWith("{") || assistantMessage.includes("title")) {
+      console.error("Assistant response appeared to contain recipe JSON but parsing failed completely.");
+    }
   }
+
   return NextResponse.json({
     message: assistantMessage,
     recipe: createdRecipe,
     model: CHAT_MODEL,
   });
 });
+
+
