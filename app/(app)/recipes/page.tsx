@@ -151,11 +151,11 @@ function RecipeCard({
         alt={recipe.title}
         className="w-full h-48 object-cover"
       />
-      <div className="p-5 flex flex-col flex-grow">
+      <div className="p-5 flex flex-col grow">
         <a href={`/recipes/${recipe.id}`}>
           <h3 className="text-lg font-bold text-orange-600 hover:text-orange-700 transition-colors mb-2 line-clamp-1">{recipe.title}</h3>
         </a>
-        <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-grow">
+        <p className="text-gray-500 text-sm mb-4 line-clamp-2 grow">
           {recipe.description}
         </p>
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-400 mb-4 border-b border-gray-50 pb-3">

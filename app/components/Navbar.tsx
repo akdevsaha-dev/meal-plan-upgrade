@@ -89,18 +89,16 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-gray-100 shadow-xs px-8 py-3.5 flex items-center justify-between font-sans">
-      {/* Brand logo & title */}
       <div className="flex items-center gap-3">
         <ChefLogo size={34} />
         <Link
           href="/recipes"
-          className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent font-black text-2xl tracking-tight hover:opacity-90 transition-opacity"
+          className="bg-linear-to-r from-orange-600 to-red-600 bg-clip-text text-transparent font-black text-2xl tracking-tight hover:opacity-90 transition-opacity"
         >
           Chef
         </Link>
       </div>
 
-      {/* Navigation links & Avatar menu */}
       <div className="flex items-center gap-8">
         <div className="flex items-center gap-6">
           {navItems.map((item) => {
@@ -132,11 +130,10 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* User profile dropdown container */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer focus:outline-none"
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-linear-to-tr from-amber-500 to-orange-600 text-white font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer focus:outline-none"
             aria-label="User menu"
           >
             {userInitials}
@@ -144,14 +141,12 @@ export default function Navbar() {
 
           {isMenuOpen && (
             <div className="absolute right-0 mt-3.5 w-64 bg-white rounded-2xl shadow-xl border border-gray-100/80 py-3 text-left animate-in fade-in slide-in-from-top-2 duration-150 ease-out">
-              {/* Profile details */}
               <div className="px-4.5 py-2.5 border-b border-gray-50 pb-3">
                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Current Account</p>
                 <p className="font-bold text-gray-800 text-sm mt-1.5 truncate">{user?.name || "Premium Chef"}</p>
                 <p className="text-xs text-gray-500 truncate mt-0.5">{user?.email || "loading account..."}</p>
               </div>
 
-              {/* Account plan badge */}
               <div className="px-4.5 py-3">
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${user?.plan?.toLowerCase() === "pro" || user?.plan?.toLowerCase() === "premium"
                   ? "bg-amber-50 text-amber-700 border-amber-200"
@@ -167,7 +162,6 @@ export default function Navbar() {
 
               <div className="border-t border-gray-100 my-1"></div>
 
-              {/* Logout option */}
               <button
                 onClick={handleLogout}
                 disabled={loggingOut}
