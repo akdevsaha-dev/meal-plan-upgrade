@@ -18,6 +18,11 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
 
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -73,7 +78,7 @@ export default function RegisterPage() {
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-[80%] border border-gray-300 text-neutral-700 rounded-lg p-2 text-sm"
+                className="w-full border border-gray-300 text-neutral-700 rounded-lg p-2 text-sm"
               />
             </div>
             <div className="mb-4">
@@ -95,7 +100,7 @@ export default function RegisterPage() {
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-[90%] border border-gray-300 text-neutral-700 rounded-lg p-2 text-sm"
+                className="w-full border border-gray-300 text-neutral-700 rounded-lg p-2 text-sm"
               />
             </div>
             <button

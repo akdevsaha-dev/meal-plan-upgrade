@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { signToken } from "@/lib/auth";
-
+import bcrypt from "bcryptjs";
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json();
 
@@ -11,7 +11,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  if (user.password !== password) {
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  if (!isValidPassword) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
