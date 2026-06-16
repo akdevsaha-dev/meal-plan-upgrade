@@ -33,7 +33,7 @@ export default function RecipesPage() {
       .catch(() => setRecipes([]));
   }, []);
 
-  function handleSaveRecipe() {}
+  function handleSaveRecipe() { }
 
   async function handleDeleteRecipe(id: string) {
     const token = localStorage.getItem("token");
@@ -44,44 +44,93 @@ export default function RecipesPage() {
     setRecipes((prev) => prev.filter((r) => r.id !== id));
   }
 
+  const filteredRecipes = recipes.filter((recipe) => {
+    const query = searchQuery.toLowerCase().trim();
+    if (!query) return true;
+
+    const matchesTitle = recipe.title.toLowerCase().includes(query);
+    const matchesDescription = recipe.description?.toLowerCase().includes(query) || false;
+    const matchesCuisine = recipe.cuisine?.toLowerCase().includes(query) || false;
+    const matchesTags = recipe.dietaryTags?.toLowerCase().includes(query) || false;
+    const matchesIngredients = recipe.ingredients?.some((ing) =>
+      ing.name.toLowerCase().includes(query)
+    ) || false;
+
+    return matchesTitle || matchesDescription || matchesCuisine || matchesTags || matchesIngredients;
+  });
+
   return (
     <div className="relative min-h-screen font-sans">
       <div className="absolute inset-0 z-0 bg-gray-50" aria-hidden />
       <CookingGifBackdrop position="absolute" stackClass="z-[1]" />
-      <div className="relative z-10 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-          <ChefLogo size={36} />
-          Recipes
-        </h1>
-        <button
-          onClick={handleSaveRecipe}
-          className="bg-lime-400 text-black px-6 py-2 text-sm font-bold border-2 border-lime-600"
-        >
-          + Save Recipe
-        </button>
-      </div>
+      <div className="relative z-10 p-6 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+            <ChefLogo size={36} />
+            Recipes
+          </h1>
+          <button
+            onClick={handleSaveRecipe}
+            className="bg-lime-400 text-black px-6 py-2 text-sm font-bold border-2 border-lime-600 cursor-pointer hover:bg-lime-500 transition-colors"
+          >
+            + Save Recipe
+          </button>
+        </div>
 
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Search recipes..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full max-w-md border-2 border-orange-400 rounded-none p-3 text-sm"
-        />
-      </div>
+        {/* Improved Premium Search Box */}
+        <div className="mb-8 max-w-xl">
+          <div className="relative flex items-center group">
+            {/* Search Icon */}
+            <div className="absolute left-4 text-gray-400 group-focus-within:text-orange-500 transition-colors pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.603 10.603z" />
+              </svg>
+            </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {recipes.map((recipe) => (
-          <RecipeCard
-            key={recipe.id}
-            recipe={recipe}
-            onDelete={handleDeleteRecipe}
-            searchQuery={searchQuery}
-          />
-        ))}
-      </div>
+            <input
+              type="text"
+              placeholder="Search by title, ingredients, cuisine or tags..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-10 py-3.5 bg-white border border-gray-200 rounded-2xl shadow-xs text-sm font-medium placeholder-gray-400 text-gray-800 transition-all duration-200 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 hover:border-gray-300"
+            />
+
+            {/* Clear Button */}
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-4 p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all focus:outline-none cursor-pointer"
+                aria-label="Clear search"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Results Counter */}
+          {searchQuery && (
+            <p className="text-xs text-gray-500 mt-2.5 font-medium animate-in fade-in slide-in-from-top-1 duration-150">
+              {filteredRecipes.length === 0 ? (
+                <span>No recipes found matching &ldquo;<span className="font-semibold text-gray-800">{searchQuery}</span>&rdquo;</span>
+              ) : (
+                <span>Found <span className="font-semibold text-orange-600">{filteredRecipes.length}</span> {filteredRecipes.length === 1 ? 'recipe' : 'recipes'}</span>
+              )}
+            </p>
+          )}
+        </div>
+
+        {/* Recipes Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredRecipes.map((recipe) => (
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              onDelete={handleDeleteRecipe}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -90,56 +139,76 @@ export default function RecipesPage() {
 function RecipeCard({
   recipe,
   onDelete,
-  searchQuery: _searchQuery,
 }: {
   recipe: Recipe;
   onDelete: (id: string) => void;
-  searchQuery: string;
 }) {
   console.log("[CHAOS render] RecipeCard", recipe.id);
-  void _searchQuery;
   return (
-    <div className="bg-white border border-gray-200 overflow-hidden">
+    <div className="bg-white border border-gray-200 overflow-hidden shadow-xs hover:shadow-md hover:translate-y-[-2px] transition-all duration-200 flex flex-col h-full rounded-2xl">
       <img
         src={recipe.imageUrl}
         alt={recipe.title}
         className="w-full h-48 object-cover"
       />
-      <div className="p-4">
+      <div className="p-5 flex flex-col flex-grow">
         <a href={`/recipes/${recipe.id}`}>
-          <h3 className="text-xl font-bold text-purple-700 mb-1">{recipe.title}</h3>
+          <h3 className="text-lg font-bold text-orange-600 hover:text-orange-700 transition-colors mb-2 line-clamp-1">{recipe.title}</h3>
         </a>
-        <p className="text-gray-500 text-sm mb-3 line-clamp-2">
+        <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-grow">
           {recipe.description}
         </p>
-        <div className="flex gap-4 text-xs text-gray-400 mb-3">
-          <span>Prep: {recipe.prepTime}min</span>
-          <span>Cook: {recipe.cookTime}min</span>
-          <span>Serves: {recipe.servings}</span>
-          {recipe.calories && <span>{recipe.calories} cal</span>}
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-400 mb-4 border-b border-gray-50 pb-3">
+          <span className="flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Prep: {recipe.prepTime}m
+          </span>
+          <span className="flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" />
+            </svg>
+            Cook: {recipe.cookTime}m
+          </span>
+          <span className="flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.079-13.13A10.53 10.53 0 0012 3c1.252 0 2.455.22 3.57.621m-9.74 5.114c0 1.62 1.312 2.933 2.933 2.933 1.621 0 2.933-1.313 2.933-2.933 0-1.62-1.312-2.933-2.933-2.933-1.621 0-2.933 1.313-2.933 2.933zM18 7.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6 7.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+            </svg>
+            Serves: {recipe.servings}
+          </span>
+          {recipe.calories && (
+            <span className="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21l8.982-8.982a9.001 9.001 0 10-14.773-4.43 9.002 9.002 0 0011.536 12.013l-4.932-3.697zm0 0L9 21" />
+              </svg>
+              {recipe.calories} kcal
+            </span>
+          )}
         </div>
         {recipe.dietaryTags && (
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className="flex flex-wrap gap-1.5 mb-5">
             {recipe.dietaryTags.split(",").map((tag) => (
               <span
                 key={tag}
-                className="bg-orange-200 text-orange-800 text-xs px-2 py-0.5 rounded-full"
+                className="bg-orange-50 text-orange-700 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md border border-orange-100"
               >
                 {tag.trim()}
               </span>
             ))}
           </div>
         )}
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-auto">
           <a
             href={`/recipes/${recipe.id}`}
-            className="bg-purple-600 text-white px-4 py-1.5 text-xs rounded-full"
+            className="flex-1 text-center bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-xs font-bold rounded-xl transition-colors cursor-pointer"
           >
-            View
+            View Details
           </a>
           <button
             onClick={() => onDelete(recipe.id)}
-            className="bg-red-100 text-red-700 px-4 py-1.5 text-xs border border-red-300"
+            className="bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 text-xs font-bold rounded-xl border border-red-200 transition-colors cursor-pointer"
           >
             Delete
           </button>
@@ -148,3 +217,4 @@ function RecipeCard({
     </div>
   );
 }
+
