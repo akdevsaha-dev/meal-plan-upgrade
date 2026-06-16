@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
+import { withErrorHandler } from "@/lib/apiWrapper";
 
-export async function GET(
+export const GET = withErrorHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
 
   const recipe = await prisma.recipe.findUnique({
@@ -21,12 +22,12 @@ export async function GET(
   }
 
   return NextResponse.json({ recipe });
-}
+});
 
-export async function PUT(
+export const PUT = withErrorHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const session = getUserFromRequest(req);
   if (!session) {
@@ -50,12 +51,12 @@ export async function PUT(
   });
 
   return NextResponse.json({ recipe });
-}
+});
 
-export async function DELETE(
+export const DELETE = withErrorHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
 
   await prisma.ingredient.deleteMany({ where: { recipeId: id } });
@@ -63,4 +64,4 @@ export async function DELETE(
   await prisma.recipe.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
-}
+});

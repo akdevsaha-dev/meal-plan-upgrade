@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { openai } from "@/lib/openai";
 import { getUserFromRequest } from "@/lib/auth";
 import { generateRecipeImage } from "@/lib/nanoBanana";
+import { withErrorHandler } from "@/lib/apiWrapper";
 
 const CHAT_MODEL = "gpt-4o-mini";
 
@@ -41,7 +42,7 @@ function generateFoodContext(): string {
   return foods.join("\n");
 }
 
-export async function GET(req: NextRequest) {
+export const GET = withErrorHandler(async (req: NextRequest) => {
   const session = getUserFromRequest(req);
   if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -51,9 +52,9 @@ export async function GET(req: NextRequest) {
     model: CHAT_MODEL,
     systemPrompt: SYSTEM_PROMPT,
   });
-}
+});
 
-export async function POST(req: NextRequest) {
+export const POST = withErrorHandler(async (req: NextRequest) => {
   const session = getUserFromRequest(req);
   if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -137,9 +138,9 @@ export async function POST(req: NextRequest) {
           data: { imageUrl },
         });
         createdRecipe.imageUrl = imageUrl;
-      } catch {}
+      } catch { }
     }
-  } catch {}
+  } catch { }
 
   return NextResponse.json({
     message: assistantMessage,
@@ -147,4 +148,4 @@ export async function POST(req: NextRequest) {
     model: CHAT_MODEL,
     systemPrompt: SYSTEM_PROMPT,
   });
-}
+});

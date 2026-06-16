@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
+import { withErrorHandler } from "@/lib/apiWrapper";
 
-export async function GET(req: NextRequest) {
+export const GET = withErrorHandler(async (req: NextRequest) => {
   const session = getUserFromRequest(req);
   if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -19,9 +20,9 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json({ mealPlans });
-}
+});
 
-export async function POST(req: NextRequest) {
+export const POST = withErrorHandler(async (req: NextRequest) => {
   const session = getUserFromRequest(req);
   if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -39,4 +40,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({ mealPlan }, { status: 201 });
-}
+});

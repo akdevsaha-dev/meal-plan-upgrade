@@ -53,3 +53,6 @@ next-env.d.ts
 
 # Optional enormous cooking GIFs (~20MB each) for NEXT_PUBLIC_COOKING_GIF_USE_LOCAL_MEGA
 public/cooking-gifs/*.gif
+
+
+AUDIT_REFERENCE.md

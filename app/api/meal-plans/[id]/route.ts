@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
+import { withErrorHandler } from "@/lib/apiWrapper";
 
-export async function GET(
+export const GET = withErrorHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const session = getUserFromRequest(req);
   if (!session) {
@@ -26,12 +27,12 @@ export async function GET(
   }
 
   return NextResponse.json({ mealPlan });
-}
+});
 
-export async function POST(
+export const POST = withErrorHandler(async (
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const session = getUserFromRequest(req);
   if (!session) {
@@ -53,4 +54,4 @@ export async function POST(
   });
 
   return NextResponse.json({ mealPlanRecipe }, { status: 201 });
-}
+});

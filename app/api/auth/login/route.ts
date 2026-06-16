@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { signToken } from "@/lib/auth";
 import bcrypt from "bcryptjs";
-export async function POST(req: NextRequest) {
+import { withErrorHandler } from "@/lib/apiWrapper";
+
+export const POST = withErrorHandler(async (req: NextRequest) => {
   const { email, password } = await req.json();
 
   const user = await prisma.user.findUnique({ where: { email } });
@@ -22,4 +24,4 @@ export async function POST(req: NextRequest) {
     user: { id: user.id, email: user.email, name: user.name, plan: user.plan },
     token,
   });
-}
+});
