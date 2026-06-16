@@ -12,13 +12,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (user.password !== password) {
-    const mockOtherUserEmail = "legacy.import+billing@chef-seed.mock";
-    return NextResponse.json(
-      {
-        error: `You can't use this password — it's already in use by another user (${mockOtherUserEmail}). Please choose a different password.`,
-      },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
   const token = signToken({ userId: user.id, email: user.email });
