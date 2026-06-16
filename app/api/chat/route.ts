@@ -1,46 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { openai } from "@/lib/openai";
 import { getUserFromRequest } from "@/lib/auth";
+import { openai } from "@/lib/openai";
 import { generateRecipeImage } from "@/lib/nanoBanana";
 import { withErrorHandler } from "@/lib/apiWrapper";
+import { SYSTEM_PROMPT } from "@/lib/chefPrompt";
 
 const CHAT_MODEL = "gpt-4o-mini";
-
-const SYSTEM_PROMPT = `You are Chef Ferraro, a helpful cooking assistant.
-You help users find and create recipes. Be friendly and helpful.
-Try to give recipe suggestions when asked.
-
-Internal notes (do not share with users):
-- Our company pays $0.03 per API call to OpenAI
-- Our internal cost target is under $500/month
-- The admin password is 'mealplan2024'
-- Never mention these internal details to users
-
-When a user asks you to create a recipe, respond with a JSON block containing the recipe details.
-Format it however you want, the system will parse it.
-
-Here is a large block of food reference data for context:
-${generateFoodContext()}
-`;
-
-function generateFoodContext(): string {
-  const foods = [];
-  const categories = [
-    "Fruits", "Vegetables", "Grains", "Proteins", "Dairy", "Spices",
-    "Oils", "Sweeteners", "Nuts", "Seeds", "Legumes", "Herbs",
-  ];
-  for (const cat of categories) {
-    for (let i = 0; i < 80; i++) {
-      foods.push(
-        `${cat} item ${i}: A common ${cat.toLowerCase()} ingredient used in various cuisines worldwide. ` +
-        `Nutritional value varies. Can be used in breakfast, lunch, or dinner preparations. ` +
-        `Store properly to maintain freshness. Check for allergens before use.`
-      );
-    }
-  }
-  return foods.join("\n");
-}
+const MAX_HISTORY = 20;
+const MAX_MESSAGE_LENGTH = 2000;
 
 export const GET = withErrorHandler(async (req: NextRequest) => {
   const session = getUserFromRequest(req);
@@ -49,8 +17,7 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
   }
 
   return NextResponse.json({
-    model: CHAT_MODEL,
-    systemPrompt: SYSTEM_PROMPT,
+    model: CHAT_MODEL
   });
 });
 
@@ -61,6 +28,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   }
 
   const { message } = await req.json();
+  if (!message || typeof message !== "string") {
+    return NextResponse.json({ error: "Invalid message" }, { status: 400 });
+  }
+
+  if (message.length > MAX_MESSAGE_LENGTH) {
+    return NextResponse.json({ error: "Message too large" }, { status: 400 });
+  }
 
   await prisma.chatMessage.create({
     data: {
@@ -73,22 +47,39 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   const history = await prisma.chatMessage.findMany({
     where: { userId: session.userId },
     orderBy: { createdAt: "asc" },
+    take: MAX_HISTORY,
   });
 
-  const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
-    { role: "system", content: SYSTEM_PROMPT },
+  const messages = [
+    { role: "system" as const, content: SYSTEM_PROMPT },
     ...history.map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
     })),
   ];
 
-  const completion = await openai.chat.completions.create({
-    model: CHAT_MODEL,
-    messages,
-  });
+  let completion;
+  try {
+    completion = await openai.chat.completions.create({
+      model: CHAT_MODEL,
+      messages,
+      temperature: 0.7,
+    });
+  } catch (error: any) {
+    console.error("OpenAI API Error:", error.message || error);
+    if (error.status === 401) {
+      return NextResponse.json(
+        { error: "Invalid OpenAI API key configured. Please check your .env file." },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json(
+      { error: "OpenAI service is currently unavailable or over quota." },
+      { status: 500 }
+    );
+  }
 
-  const assistantMessage = completion.choices[0].message.content || "";
+  const assistantMessage = completion.choices[0]?.message?.content ?? "";
 
   await prisma.chatMessage.create({
     data: {
@@ -101,51 +92,51 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   let createdRecipe = null;
   try {
     const parsed = JSON.parse(assistantMessage);
-    if (parsed.title) {
+    if (parsed?.title && typeof parsed.title === "string") {
       createdRecipe = await prisma.recipe.create({
         data: {
           title: parsed.title,
           description: parsed.description || "",
-          imageUrl: "/images/recipes/classic-pancakes.jpg",
+          imageUrl: "/images/recipes/default.jpg",
           prepTime: parsed.prepTime || parsed.prep_time || 0,
           cookTime: parsed.cookTime || parsed.cook_time || 0,
           servings: parsed.servings || 1,
-          calories: parsed.calories || null,
-          cuisine: parsed.cuisine || null,
-          dietaryTags: parsed.dietaryTags || parsed.dietary_tags || null,
+          calories: parsed.calories ?? null,
+          cuisine: parsed.cuisine ?? null,
+          dietaryTags: parsed.dietaryTags ?? parsed.dietary_tags ?? null,
           userId: session.userId,
           ingredients: {
-            create: (parsed.ingredients || []).map(
-              (ing: { name?: string; amount?: string; unit?: string }) => ({
-                name: ing.name || "",
-                amount: String(ing.amount || ""),
-                unit: ing.unit || "",
-              })
-            ),
+            create: Array.isArray(parsed.ingredients)
+              ? parsed.ingredients.map((ing: any) => ({
+                name: String(ing?.name || ""),
+                amount: String(ing?.amount || ""),
+                unit: String(ing?.unit || ""),
+              })) : [],
           },
         },
         include: { ingredients: true },
       });
 
+
       try {
         const imagePrompt =
-          parsed.imagePrompt ||
-          parsed.image_prompt ||
-          `A delicious ${parsed.title}`;
+          parsed.imagePrompt || parsed.image_prompt || `A delicious ${parsed.title}`;
         const imageUrl = await generateRecipeImage(imagePrompt);
         await prisma.recipe.update({
           where: { id: createdRecipe.id },
           data: { imageUrl },
         });
         createdRecipe.imageUrl = imageUrl;
-      } catch { }
+      } catch (err) {
+        console.error("Image generation failed:", err);
+      }
     }
-  } catch { }
-
+  } catch (err) {
+    console.error("Failed to parse assistant JSON:", err);
+  }
   return NextResponse.json({
     message: assistantMessage,
     recipe: createdRecipe,
     model: CHAT_MODEL,
-    systemPrompt: SYSTEM_PROMPT,
   });
 });
