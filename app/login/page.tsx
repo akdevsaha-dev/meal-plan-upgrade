@@ -10,11 +10,13 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
 
     const res = await fetch("/api/auth/login", {
       method: "POST",
@@ -25,7 +27,11 @@ export default function LoginPage() {
     const data = await res.json();
 
     if (!res.ok) {
-      setError(data.error || "Login failed");
+      if (res.status === 422 && data.details) {
+        setFieldErrors(data.details);
+      } else {
+        setError(data.error || "Login failed");
+      }
       return;
     }
 
@@ -59,9 +65,14 @@ export default function LoginPage() {
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full border-2 placeholder:text-neutral-400 text-neutral-800 border-gray-300 p-3 text-sm"
+                className={`w-full border-2 placeholder:text-neutral-400 text-neutral-800 p-3 text-sm ${
+                  fieldErrors.email ? "border-red-400" : "border-gray-300"
+                }`}
                 placeholder="you@example.com"
               />
+              {fieldErrors.email?.map((msg) => (
+                <p key={msg} className="text-red-600 text-xs mt-1">{msg}</p>
+              ))}
             </div>
             <div className="mb-6">
               <label className="block text-sm font-bold text-gray-800 mb-1">
@@ -71,9 +82,14 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-2 placeholder:text-neutral-400 text-neutral-800 border-gray-300 p-3 text-sm"
+                className={`w-full border-2 placeholder:text-neutral-400 text-neutral-800 p-3 text-sm ${
+                  fieldErrors.password ? "border-red-400" : "border-gray-300"
+                }`}
                 placeholder="••••••••"
               />
+              {fieldErrors.password?.map((msg) => (
+                <p key={msg} className="text-red-600 text-xs mt-1">{msg}</p>
+              ))}
             </div>
             <button
               type="submit"

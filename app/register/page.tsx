@@ -12,11 +12,13 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -32,7 +34,11 @@ export default function RegisterPage() {
     const data = await res.json();
 
     if (!res.ok) {
-      setError(data.error || "Registration failed");
+      if (res.status === 422 && data.details) {
+        setFieldErrors(data.details);
+      } else {
+        setError(data.error || "Registration failed");
+      }
       return;
     }
 
@@ -67,8 +73,13 @@ export default function RegisterPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full border border-gray-300 text-neutral-700 rounded-lg p-2 text-sm"
+                className={`w-full border text-neutral-700 rounded-lg p-2 text-sm ${
+                  fieldErrors.name ? "border-red-400" : "border-gray-300"
+                }`}
               />
+              {fieldErrors.name?.map((msg) => (
+                <p key={msg} className="text-red-600 text-xs mt-1">{msg}</p>
+              ))}
             </div>
             <div className="mb-4">
               <label className="block text-xs uppercase text-gray-600 mb-1">
@@ -78,8 +89,13 @@ export default function RegisterPage() {
                 type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-gray-300 text-neutral-700 rounded-lg p-2 text-sm"
+                className={`w-full border text-neutral-700 rounded-lg p-2 text-sm ${
+                  fieldErrors.email ? "border-red-400" : "border-gray-300"
+                }`}
               />
+              {fieldErrors.email?.map((msg) => (
+                <p key={msg} className="text-red-600 text-xs mt-1">{msg}</p>
+              ))}
             </div>
             <div className="mb-4">
               <label className="block text-xs uppercase text-gray-600 mb-1">
@@ -89,8 +105,13 @@ export default function RegisterPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-300 text-neutral-700 rounded-lg p-2 text-sm"
+                className={`w-full border text-neutral-700 rounded-lg p-2 text-sm ${
+                  fieldErrors.password ? "border-red-400" : "border-gray-300"
+                }`}
               />
+              {fieldErrors.password?.map((msg) => (
+                <p key={msg} className="text-red-600 text-xs mt-1">{msg}</p>
+              ))}
             </div>
             <div className="mb-6">
               <label className="block text-xs uppercase text-gray-600 mb-1">

@@ -3,16 +3,23 @@ import { prisma } from "@/lib/prisma";
 import { signToken } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { withErrorHandler } from "@/lib/apiWrapper";
+import { RegisterSchema } from "@/validation/auth";
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
   const body = await req.json();
 
-  const { email, password, name } = body;
+  const parsed = RegisterSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
+      { status: 422 }
+    );
+  }
 
-  const trimmedEmail = email.toLowerCase().trim();
+  const { email, password, name } = parsed.data;
 
   const existingUser = await prisma.user.findUnique({
-    where: { email: trimmedEmail },
+    where: { email },
   });
 
   if (existingUser) {
@@ -25,9 +32,9 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   const user = await prisma.user.create({
     data: {
-      email: trimmedEmail,
+      email,
       password: hashedPassword,
-      name: name.trim(),
+      name,
     },
     select: {
       id: true,

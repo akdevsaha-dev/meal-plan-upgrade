@@ -3,9 +3,20 @@ import { prisma } from "@/lib/prisma";
 import { signToken } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { withErrorHandler } from "@/lib/apiWrapper";
+import { LoginSchema } from "@/validation/auth";
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
-  const { email, password } = await req.json();
+  const body = await req.json();
+
+  const parsed = LoginSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
+      { status: 422 }
+    );
+  }
+
+  const { email, password } = parsed.data;
 
   const user = await prisma.user.findUnique({ where: { email } });
 
