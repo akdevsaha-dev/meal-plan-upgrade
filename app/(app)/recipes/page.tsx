@@ -24,19 +24,24 @@ export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    fetch("/api/recipes")
+    const token = localStorage.getItem("token");
+    fetch("/api/recipes", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then((r) => r.json())
-      .then((data) => setRecipes(data.recipes));
+      .then((data) => setRecipes(data.recipes || []))
+      .catch(() => setRecipes([]));
   }, []);
 
   function handleSaveRecipe() {}
 
   async function handleDeleteRecipe(id: string) {
-    await fetch("/api/recipes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
+    const token = localStorage.getItem("token");
+    await fetch(`/api/recipes/${id}`, {
+      method: "DELETE",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
+    setRecipes((prev) => prev.filter((r) => r.id !== id));
   }
 
   return (

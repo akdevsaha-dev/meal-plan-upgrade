@@ -3,14 +3,22 @@
 import ChefLogo from "@/app/components/ChefLogo";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function Navbar() {
   console.log("[CHAOS render] Navbar");
   const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  function handleLogout() {
-    console.log("Logging out...");
-    router.push("/login");
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      router.push("/login");
+    }
   }
 
   return (
@@ -32,8 +40,12 @@ export default function Navbar() {
         <Link href="/settings" className="text-yellow-300 text-sm font-medium">
           Settings
         </Link>
-        <button onClick={handleLogout} className="text-white text-sm font-medium">
-          Logout
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="text-white text-sm font-medium disabled:opacity-50"
+        >
+          {loggingOut ? "Logging out…" : "Logout"}
         </button>
       </div>
     </nav>
