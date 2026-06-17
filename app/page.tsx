@@ -87,7 +87,7 @@ export default function Home() {
           <span
             className="landing-title-glow font-extrabold uppercase tracking-wider text-xl md:text-2xl bg-gradient-to-r from-orange-400 via-pink-400 to-violet-400 bg-clip-text text-transparent"
           >
-            ChefAI
+            MealPlan
           </span>
         </div>
         <nav className="flex items-center gap-6 text-sm font-semibold">
@@ -373,7 +373,7 @@ export default function Home() {
         {/* Testimonial Section */}
         <section className="relative z-10 max-w-4xl mx-auto rounded-3xl border border-white/5 bg-white/[0.01] p-8 md:p-12 text-center backdrop-blur-sm">
           <blockquote className="relative z-10 italic text-lg text-gray-300 mb-6">
-            &ldquo;ChefAI completely changed how my family handles dinnertime. I just describe the ingredients we have, and it crafts healthy, tailored recipes that everyone loves.&rdquo;
+            &ldquo;MealPlan completely changed how my family handles dinnertime. I just describe the ingredients we have, and it crafts healthy, tailored recipes that everyone loves.&rdquo;
           </blockquote>
           <span className="block font-bold text-sm text-orange-400 uppercase tracking-wider">— Sarah M., Verified Home Cook</span>
         </section>

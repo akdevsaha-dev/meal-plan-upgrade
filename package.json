@@ -11,14 +11,15 @@
     "generate:recipe-images": "tsx scripts/generate-seed-recipe-images.ts"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.72",
     "@google/genai": "^1.48.0",
     "@prisma/client": "^6.19.3",
     "@stripe/stripe-js": "^9.0.1",
+    "ai": "^6.0.207",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.0",
     "jsonwebtoken": "^9.0.3",
     "next": "16.2.2",
-    "openai": "^6.33.0",
     "prisma": "^6.19.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",

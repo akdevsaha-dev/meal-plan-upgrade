@@ -10,7 +10,7 @@ import { RecipeInput } from "@/validation/recipeSchema";
 export function sanitizeRecipe(recipe: RecipeInput): RecipeInput {
   return {
     title: recipe.title.trim(),
-    description: recipe.description ? recipe.description.trim() : undefined,
+    description: recipe.description ? recipe.description.trim() : "",
     prepTime: Math.max(0, recipe.prepTime),
     cookTime: Math.max(0, recipe.cookTime),
     servings: Math.max(1, recipe.servings),

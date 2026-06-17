@@ -31,28 +31,44 @@ export async function generateImagenImageBuffer(
 ): Promise<Buffer> {
   const aspectRatio = opts.aspectRatio ?? "4:3";
   const imageSize = opts.imageSize ?? "2K";
-  const ai = getGenAI();
-  const response = await ai.models.generateImages({
-    model: IMAGEN_MODEL,
-    prompt: opts.prompt,
-    config: {
-      numberOfImages: 1,
-      aspectRatio,
-      imageSize,
-      outputMimeType: opts.mimeType,
-      ...(opts.mimeType === "image/jpeg"
-        ? { outputCompressionQuality: opts.jpegQuality ?? 92 }
-        : {}),
-      personGeneration: PersonGeneration.DONT_ALLOW,
-    },
-  });
-  const b64 = response.generatedImages?.[0]?.image?.imageBytes;
-  if (!b64) {
-    throw new Error(
-      "Imagen returned no image (safety filter, quota, or empty response)."
-    );
+  try {
+    const ai = getGenAI();
+    const response = await ai.models.generateImages({
+      model: IMAGEN_MODEL,
+      prompt: opts.prompt,
+      config: {
+        numberOfImages: 1,
+        aspectRatio,
+        imageSize,
+        outputMimeType: opts.mimeType,
+        ...(opts.mimeType === "image/jpeg"
+          ? { outputCompressionQuality: opts.jpegQuality ?? 92 }
+          : {}),
+        personGeneration: PersonGeneration.DONT_ALLOW,
+      },
+    });
+    const b64 = response.generatedImages?.[0]?.image?.imageBytes;
+    if (!b64) {
+      throw new Error(
+        "Imagen returned no image (safety filter, quota, or empty response)."
+      );
+    }
+    return Buffer.from(b64, "base64");
+  } catch (err) {
+    console.warn("Imagen image generation failed, falling back to Pollinations.ai. Error:", err instanceof Error ? err.message : err);
+    try {
+      const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(opts.prompt)}?width=1024&height=768&nologo=true`;
+      const res = await fetch(fallbackUrl);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch from fallback image API: ${res.statusText}`);
+      }
+      const arrayBuffer = await res.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+    } catch (fallbackErr) {
+      console.error("Fallback image generation also failed:", fallbackErr);
+      throw err;
+    }
   }
-  return Buffer.from(b64, "base64");
 }
 
 export async function generateRecipeImage(imagePrompt: string): Promise<string> {

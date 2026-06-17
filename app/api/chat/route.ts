@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/auth";
-import { openai } from "@/lib/openai";
+import { openaiClient, DEFAULT_MODEL } from "@/lib/ai";
 import { generateRecipeImage } from "@/lib/nanoBanana";
 import { withErrorHandler } from "@/lib/apiWrapper";
 import { SYSTEM_PROMPT } from "@/lib/chefPrompt";
-import { parseLLMJson } from "@/lib/parseLLM";
 import { RecipeSchema } from "@/validation/recipeSchema";
 import { sanitizeRecipe } from "@/lib/sanitizeRecipe";
+import { streamText, generateText, generateObject } from "ai";
 
-const CHAT_MODEL = "gpt-4o-mini";
 const MAX_HISTORY = 20;
 const MAX_MESSAGE_LENGTH = 2000;
 
@@ -20,7 +19,7 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
   }
 
   return NextResponse.json({
-    model: CHAT_MODEL
+    model: DEFAULT_MODEL,
   });
 });
 
@@ -30,133 +29,153 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const { message } = await req.json();
-  if (!message || typeof message !== "string") {
-    return NextResponse.json({ error: "Invalid message" }, { status: 400 });
+  const { messages } = await req.json();
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return NextResponse.json({ error: "Invalid messages payload" }, { status: 400 });
   }
 
-  if (message.length > MAX_MESSAGE_LENGTH) {
+  const lastUserMessage = messages[messages.length - 1];
+  if (
+    !lastUserMessage ||
+    lastUserMessage.role !== "user" ||
+    typeof lastUserMessage.content !== "string"
+  ) {
+    return NextResponse.json({ error: "Last message must be a user message" }, { status: 400 });
+  }
+
+  const messageText = lastUserMessage.content;
+  if (messageText.length > MAX_MESSAGE_LENGTH) {
     return NextResponse.json({ error: "Message too large" }, { status: 400 });
+  }
+
+  const userId = session.userId;
+
+  if (!process.env.AI_GATEWAY_API_KEY || process.env.AI_GATEWAY_API_KEY.trim() === "") {
+    throw new Error("AI_GATEWAY_API_KEY is missing or empty");
   }
 
   await prisma.chatMessage.create({
     data: {
       role: "user",
-      content: message,
-      userId: session.userId,
+      content: messageText,
+      userId: userId,
     },
   });
 
   const history = await prisma.chatMessage.findMany({
-    where: { userId: session.userId },
+    where: { userId: userId },
     orderBy: { createdAt: "asc" },
     take: MAX_HISTORY,
   });
 
-  const messages = [
-    { role: "system" as const, content: SYSTEM_PROMPT },
-    ...history.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    })),
-  ];
+  const formattedMessages: Array<{ role: "user" | "assistant"; content: string }> = history.map((m) => ({
+    role: m.role as "user" | "assistant",
+    content: m.content,
+  }));
 
-  let completion;
-  try {
-    completion = await openai.chat.completions.create({
-      model: CHAT_MODEL,
-      messages,
-      temperature: 0.7,
-    });
-  } catch (error: any) {
-    console.error("OpenAI API Error:", error.message || error);
-    if (error.status === 401) {
-      return NextResponse.json(
-        { error: "Invalid OpenAI API key configured. Please check your .env file." },
-        { status: 500 }
-      );
-    }
-    return NextResponse.json(
-      { error: "OpenAI service is currently unavailable or over quota." },
-      { status: 500 }
-    );
-  }
+  const contextForClassification = formattedMessages.slice(-5).map(m => `${m.role}: ${m.content}`).join("\n");
 
-  const assistantMessage = completion.choices[0]?.message?.content ?? "";
-
-  await prisma.chatMessage.create({
-    data: {
-      role: "assistant",
-      content: assistantMessage,
-      userId: session.userId,
-    },
+  const classification = await generateText({
+    model: openaiClient(DEFAULT_MODEL),
+    system: "You are an intent classifier. Your task is to output 'true' if the user is asking to create, generate, discover, adapt, modify, suggest, or write a recipe based on their latest message or the conversational context. Otherwise, output 'false'. Respond with ONLY 'true' or 'false' (no explanation, no punctuation, lowercase).",
+    prompt: `Conversation Context:\n${contextForClassification}\n\nLast Message:\n${messageText}`,
   });
 
-  let createdRecipe = null;
+  const isRecipeRequest = classification.text.toLowerCase().includes("true");
 
-  const parsed = parseLLMJson(assistantMessage);
+  if (isRecipeRequest) {
+    console.log(`[Recipe Intent Detected] Generating structured recipe for user ${userId}`);
 
-  if (parsed !== null) {
-    const validation = RecipeSchema.safeParse(parsed);
+    const { object: recipe } = await generateObject({
+      model: openaiClient(DEFAULT_MODEL),
+      schema: RecipeSchema,
+      system: "You are a professional chef. Generate a realistic and delicious recipe based on the user's request. Fill in all fields appropriately.",
+      messages: formattedMessages,
+    });
 
-    if (validation.success) {
-      const sanitized = sanitizeRecipe(validation.data);
+    const sanitized = sanitizeRecipe(recipe);
+
+    let createdRecipe = null;
+    try {
+      createdRecipe = await prisma.recipe.create({
+        data: {
+          title: sanitized.title,
+          description: sanitized.description || "",
+          imageUrl: "/images/recipes/default.jpg",
+          prepTime: sanitized.prepTime,
+          cookTime: sanitized.cookTime,
+          servings: sanitized.servings,
+          calories: sanitized.calories,
+          cuisine: sanitized.cuisine,
+          dietaryTags: sanitized.dietaryTags ? sanitized.dietaryTags.join(", ") : null,
+          userId: userId,
+          ingredients: {
+            create: sanitized.ingredients.map((ing) => ({
+              name: ing.name,
+              amount: ing.amount,
+              unit: ing.unit,
+            })),
+          },
+        },
+        include: { ingredients: true },
+      });
 
       try {
-        createdRecipe = await prisma.recipe.create({
-          data: {
-            title: sanitized.title,
-            description: sanitized.description || "",
-            imageUrl: "/images/recipes/default.jpg",
-            prepTime: sanitized.prepTime,
-            cookTime: sanitized.cookTime,
-            servings: sanitized.servings,
-            calories: sanitized.calories,
-            cuisine: sanitized.cuisine,
-            dietaryTags: sanitized.dietaryTags ? sanitized.dietaryTags.join(", ") : null,
-            userId: session.userId,
-            ingredients: {
-              create: sanitized.ingredients.map((ing) => ({
-                name: ing.name,
-                amount: ing.amount,
-                unit: ing.unit,
-              })),
-            },
-          },
-          include: { ingredients: true },
+        const imagePrompt = sanitized.imagePrompt;
+        const imageUrl = await generateRecipeImage(imagePrompt);
+        await prisma.recipe.update({
+          where: { id: createdRecipe.id },
+          data: { imageUrl },
         });
-
-        try {
-          const imagePrompt = sanitized.imagePrompt;
-          const imageUrl = await generateRecipeImage(imagePrompt);
-          await prisma.recipe.update({
-            where: { id: createdRecipe.id },
-            data: { imageUrl },
-          });
-          createdRecipe.imageUrl = imageUrl;
-        } catch (err) {
-          console.error("Recipe image generation failed:", err);
-        }
-      } catch (dbErr) {
-        console.error("Failed to write sanitized recipe to database:", dbErr);
+      } catch (err) {
+        console.error("Recipe image generation failed in structured pipeline:", err);
       }
-    } else {
-      console.warn(
-        "Recipe validation failed for assistant message. Issues:",
-        JSON.stringify(validation.error.issues, null, 2)
-      );
+    } catch (dbErr) {
+      console.error("Failed to write sanitized recipe to database:", dbErr);
     }
+
+    const confirmationPrompt = `Write a short, friendly, natural-language confirmation message to the user that their recipe "${sanitized.title}" has been successfully generated and saved to their recipe collection. Summarize the recipe key parameters (e.g. cuisine: ${sanitized.cuisine || "general"}, prep time: ${sanitized.prepTime} mins, calories: ${sanitized.calories || "N/A"}). Do NOT output raw JSON or internal recipe object fields in the text. Keep it conversational.`;
+
+    const result = await streamText({
+      model: openaiClient(DEFAULT_MODEL),
+      prompt: confirmationPrompt,
+      async onFinish({ text }) {
+        try {
+          await prisma.chatMessage.create({
+            data: {
+              role: "assistant",
+              content: text,
+              userId: userId,
+            },
+          });
+        } catch (dbErr) {
+          console.error("Failed to write assistant response in structured pipeline:", dbErr);
+        }
+      },
+    });
+
+    return result.toTextStreamResponse();
   } else {
-    if (assistantMessage.trim().startsWith("{") || assistantMessage.includes("title")) {
-      console.error("Assistant response appeared to contain recipe JSON but parsing failed completely.");
-    }
+    const result = streamText({
+      model: openaiClient(DEFAULT_MODEL),
+      system: SYSTEM_PROMPT,
+      messages: formattedMessages,
+      temperature: 0.7,
+      async onFinish({ text }) {
+        try {
+          await prisma.chatMessage.create({
+            data: {
+              role: "assistant",
+              content: text,
+              userId: userId,
+            },
+          });
+        } catch (dbErr) {
+          console.error("Failed to write assistant response in normal chat pipeline:", dbErr);
+        }
+      },
+    });
+
+    return result.toTextStreamResponse();
   }
-
-  return NextResponse.json({
-    message: assistantMessage,
-    recipe: createdRecipe,
-    model: CHAT_MODEL,
-  });
 });
-
-

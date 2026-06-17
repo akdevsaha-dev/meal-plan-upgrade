@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export type ApiRouteHandler = (req: NextRequest, ...args: any[]) => Promise<NextResponse>;
+export type ApiRouteHandler = (req: NextRequest, ...args: any[]) => Promise<Response>;
 
 export function withErrorHandler(handler: ApiRouteHandler): ApiRouteHandler {
   return async (req: NextRequest, ...args: any[]) => {

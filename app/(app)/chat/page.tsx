@@ -62,29 +62,67 @@ export default function ChatPage() {
     if (!input.trim() || loading) return;
 
     const userMessage: Message = { role: "user", content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const currentMessages = [...messages, userMessage];
+    setMessages(currentMessages);
     setInput("");
     setLoading(true);
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ message: input }),
-    });
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          messages: currentMessages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
 
-    const data = await res.json();
+      if (!res.ok) {
+        throw new Error(`Chat API error (${res.status})`);
+      }
 
-    const assistantMessage: Message = {
-      role: "assistant",
-      content: data.message,
-    };
-    setMessages((prev) => [...prev, assistantMessage]);
-    setLoading(false);
+      const reader = res.body?.getReader();
+      if (!reader) {
+        throw new Error("No response body reader available");
+      }
+
+      // Add empty assistant message to display streaming content
+      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+      setLoading(false);
+
+      const decoder = new TextDecoder();
+      let assistantContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        assistantContent += chunk;
+
+        setMessages((prev) => {
+          const copy = [...prev];
+          if (copy.length > 0) {
+            copy[copy.length - 1] = {
+              role: "assistant",
+              content: assistantContent,
+            };
+          }
+          return copy;
+        });
+      }
+    } catch (err) {
+      console.error("Failed to stream chat:", err);
+      alert("Failed to send message. Please try again.");
+      setLoading(false);
+    }
   }
 
   return (

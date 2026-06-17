@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
   },
   env: {
     DATABASE_URL: process.env.DATABASE_URL,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     STRIPE_RESTRICTED_KEY: process.env.STRIPE_RESTRICTED_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
