@@ -40,7 +40,7 @@ export default function Home() {
     >
       {/* Dynamic background lighting */}
       <div
-        className="landing-blur-layer pointer-events-none fixed inset-0 z-[5]"
+        className="landing-blur-layer pointer-events-none fixed inset-0 z-5"
         style={{
           background:
             "radial-gradient(circle at 20% 30%, rgba(249, 115, 22, 0.08), transparent 50%), radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.12), transparent 50%)",
@@ -48,7 +48,7 @@ export default function Home() {
         aria-hidden
       />
       <div
-        className="pointer-events-none fixed inset-0 z-[4] opacity-30 mix-blend-screen"
+        className="pointer-events-none fixed inset-0 z-4 opacity-30 mix-blend-screen"
         style={{
           background:
             "radial-gradient(ellipse 60% 40% at 50% 10%, rgba(124, 58, 237, 0.15), transparent 60%), radial-gradient(ellipse 50% 50% at 90% 80%, rgba(249, 115, 22, 0.05), transparent 50%)",
@@ -61,7 +61,7 @@ export default function Home() {
       {mounted && Array.from({ length: JUNK_ORB_COUNT }, (_, i) => (
         <span
           key={i}
-          className="pointer-events-none fixed z-[3] rounded-full"
+          className="pointer-events-none fixed z-3 rounded-full"
           style={{
             width: 3 + (i % 3) * 2,
             height: 3 + (i % 3) * 2,
@@ -85,7 +85,7 @@ export default function Home() {
             <ChefLogo size={40} href={null} priority />
           </span>
           <span
-            className="landing-title-glow font-extrabold uppercase tracking-wider text-xl md:text-2xl bg-gradient-to-r from-orange-400 via-pink-400 to-violet-400 bg-clip-text text-transparent"
+            className="landing-title-glow font-extrabold uppercase tracking-wider text-xl md:text-2xl bg-linear-to-r from-orange-400 via-pink-400 to-violet-400 bg-clip-text text-transparent"
           >
             MealPlan
           </span>
@@ -135,7 +135,7 @@ export default function Home() {
           </div>
           <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6 leading-tight text-white">
             Plan Meals. Generate Recipes.{" "}
-            <span className="bg-gradient-to-r from-orange-400 via-rose-400 to-violet-500 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-orange-400 via-rose-400 to-violet-500 bg-clip-text text-transparent">
               Cook Smart.
             </span>
           </h1>
@@ -147,7 +147,7 @@ export default function Home() {
             {isLoggedIn ? (
               <Link
                 href="/recipes"
-                className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-rose-500 text-white px-8 py-4 rounded-2xl text-base font-bold shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition-all text-center"
+                className="w-full sm:w-auto bg-linear-to-r from-orange-500 to-rose-500 text-white px-8 py-4 rounded-2xl text-base font-bold shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition-all text-center"
               >
                 Go to Recipes Dashboard
               </Link>
@@ -155,7 +155,7 @@ export default function Home() {
               <>
                 <Link
                   href="/register"
-                  className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-rose-500 text-white px-8 py-4 rounded-2xl text-base font-bold shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition-all text-center"
+                  className="w-full sm:w-auto bg-linear-to-r from-orange-500 to-rose-500 text-white px-8 py-4 rounded-2xl text-base font-bold shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition-all text-center"
                 >
                   Start Free Trial
                 </Link>
@@ -172,8 +172,8 @@ export default function Home() {
 
         {/* Dynamic Glassmorphic Visual Section */}
         <section className="mb-32 relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-violet-500/10 blur-3xl -z-10 rounded-3xl"></div>
-          <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 md:p-12 backdrop-blur-xl shadow-2xl">
+          <div className="absolute inset-0 bg-linear-to-r from-orange-500/10 to-violet-500/10 blur-3xl -z-10 rounded-3xl"></div>
+          <div className="bg-white/3 border border-white/10 rounded-3xl p-6 md:p-12 backdrop-blur-xl shadow-2xl">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-violet-400 mb-2 block">Interactive Planner</span>
@@ -275,7 +275,7 @@ export default function Home() {
             ].map((feat, idx) => (
               <div
                 key={idx}
-                className="landing-card-rave bg-white/[0.02] border border-white/5 hover:border-white/10 rounded-2xl p-8 hover:translate-y-[-4px] transition-all duration-300"
+                className="landing-card-rave bg-white/2 border border-white/5 hover:border-white/10 rounded-2xl p-8 hover:translate-y-[-4px] transition-all duration-300"
               >
                 <div className="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center mb-6">
                   {feat.icon}
@@ -300,7 +300,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
             {/* Free Plan */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-8 flex flex-col justify-between">
+            <div className="bg-white/2 border border-white/5 rounded-3xl p-8 flex flex-col justify-between">
               <div>
                 <h3 className="text-lg font-bold text-gray-300 mb-2">Free Plan</h3>
                 <div className="flex items-baseline gap-1 mb-6">
@@ -330,14 +330,14 @@ export default function Home() {
             </div>
 
             {/* Pro Plan */}
-            <div className="bg-gradient-to-b from-orange-500/10 to-violet-500/10 border-2 border-orange-500/30 rounded-3xl p-8 flex flex-col justify-between relative">
+            <div className="bg-linear-to-b from-orange-500/10 to-violet-500/10 border-2 border-orange-500/30 rounded-3xl p-8 flex flex-col justify-between relative">
               <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-orange-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">
                 Most Popular
               </span>
               <div>
                 <h3 className="text-lg font-bold text-orange-400 mb-2">Pro Plan</h3>
                 <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-4xl font-black text-white">$9.99</span>
+                  <span className="text-4xl font-black text-white">$29.99</span>
                   <span className="text-gray-500 text-sm">/ month</span>
                 </div>
                 <p className="text-sm text-gray-400 mb-8 leading-relaxed">
@@ -371,7 +371,7 @@ export default function Home() {
         </section>
 
         {/* Testimonial Section */}
-        <section className="relative z-10 max-w-4xl mx-auto rounded-3xl border border-white/5 bg-white/[0.01] p-8 md:p-12 text-center backdrop-blur-sm">
+        <section className="relative z-10 max-w-4xl mx-auto rounded-3xl border border-white/5 bg-white/1 p-8 md:p-12 text-center backdrop-blur-sm">
           <blockquote className="relative z-10 italic text-lg text-gray-300 mb-6">
             &ldquo;MealPlan completely changed how my family handles dinnertime. I just describe the ingredients we have, and it crafts healthy, tailored recipes that everyone loves.&rdquo;
           </blockquote>

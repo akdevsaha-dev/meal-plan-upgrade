@@ -116,7 +116,7 @@ export default function MealPlansPage() {
   return (
     <div className="relative min-h-screen bg-linear-to-b from-white to-gray-50/70 font-sans text-gray-900">
       <div
-        className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-70 pointer-events-none"
+        className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-70 pointer-events-none"
         aria-hidden="true"
       />
       <CookingGifBackdrop position="absolute" stackClass="z-[1]" />

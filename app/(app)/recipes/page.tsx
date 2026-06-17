@@ -3,6 +3,7 @@
 import ChefLogo from "@/app/components/ChefLogo";
 import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface Recipe {
   id: string;
@@ -23,6 +24,7 @@ export default function RecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -41,7 +43,9 @@ export default function RecipesPage() {
       });
   }, []);
 
-  function handleSaveRecipe() { }
+  function handleSaveRecipe() {
+    setIsModalOpen(true);
+  }
 
   async function handleDeleteRecipe(id: string) {
     const token = localStorage.getItem("token");
@@ -141,12 +145,12 @@ export default function RecipesPage() {
             <p className="text-gray-500 max-w-md mb-8">
               It looks like you haven't saved any recipes yet. Start building your collection to plan meals effortlessly!
             </p>
-            <button
-              onClick={() => window.location.href = '/chat'}
-              className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:bg-orange-700 hover:shadow-lg transition-all"
+            <Link
+              href="/chat"
+              className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:bg-orange-700 hover:shadow-lg transition-all text-center"
             >
               Create via Recipe Bot
-            </button>
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -160,6 +164,63 @@ export default function RecipesPage() {
           </div>
         )}
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          {/* Backdrop with backdrop-blur */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-modal-backdrop"
+            onClick={() => setIsModalOpen(false)}
+          />
+          
+          {/* Modal Container */}
+          <div className="relative z-10 w-full max-w-md overflow-hidden bg-white border border-gray-100 rounded-3xl shadow-2xl p-8 text-center animate-modal-content">
+            {/* Elegant top icon decoration */}
+            <div className="mx-auto w-14 h-14 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mb-6 shadow-inner ring-4 ring-orange-50/50 animate-pulse">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+              </svg>
+            </div>
+
+            <h3 className="text-xl font-black text-gray-900 mb-3 tracking-tight">
+              Create a New Recipe
+            </h3>
+            
+            <p className="text-gray-500 text-sm leading-relaxed mb-6 font-semibold">
+              To save or create a new recipe, chat with <span className="font-bold text-orange-600">Chef Ferraro</span>! Simply tell the chef what ingredients you have or ask to build a custom meal plan.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="order-2 sm:order-1 px-6 py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <Link
+                href="/chat"
+                className="order-1 sm:order-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-center flex items-center justify-center gap-1.5"
+              >
+                Go to Chef Ferraro
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </Link>
+            </div>
+
+            {/* Absolute close button */}
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all cursor-pointer focus:outline-none"
+              aria-label="Close modal"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -180,9 +241,9 @@ function RecipeCard({
         className="w-full h-48 object-cover"
       />
       <div className="p-5 flex flex-col grow">
-        <a href={`/recipes/${recipe.id}`}>
+        <Link href={`/recipes/${recipe.id}`}>
           <h3 className="text-lg font-bold text-orange-600 hover:text-orange-700 transition-colors mb-2 line-clamp-1">{recipe.title}</h3>
-        </a>
+        </Link>
         <p className="text-gray-500 text-sm mb-4 line-clamp-2 grow">
           {recipe.description}
         </p>
@@ -228,12 +289,12 @@ function RecipeCard({
           </div>
         )}
         <div className="flex gap-2 mt-auto">
-          <a
+          <Link
             href={`/recipes/${recipe.id}`}
             className="flex-1 text-center bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-xs font-bold rounded-xl transition-colors cursor-pointer"
           >
             View Details
-          </a>
+          </Link>
           <button
             onClick={() => onDelete(recipe.id)}
             className="bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 text-xs font-bold rounded-xl border border-red-200 transition-colors cursor-pointer"

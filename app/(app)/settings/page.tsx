@@ -267,7 +267,7 @@ export default function SettingsPage() {
                   <div className="text-right">
                     <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider font-sans">Price</span>
                     <p className="text-lg font-extrabold text-gray-900 mt-1">
-                      {user.hasProAccess ? "$9.99/mo" : "$0.00/mo"}
+                      {user.hasProAccess ? "$29.99/mo" : "$0.00/mo"}
                     </p>
                   </div>
                 </div>

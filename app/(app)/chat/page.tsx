@@ -167,7 +167,7 @@ export default function ChatPage() {
     <div className="relative flex h-[calc(100vh-64px)] flex-col font-sans overflow-hidden">
 
       <div
-        className="absolute inset-0 z-0 bg-gradient-to-tr from-amber-50/20 via-stone-50/40 to-orange-50/20 dark:from-neutral-950 dark:via-neutral-900/60 dark:to-neutral-950"
+        className="absolute inset-0 z-0 bg-linear-to-tr from-amber-50/20 via-stone-50/40 to-orange-50/20 dark:from-neutral-950 dark:via-neutral-900/60 dark:to-neutral-950"
         aria-hidden="true"
       />
       <CookingGifBackdrop position="absolute" stackClass="z-[1]" />
@@ -202,7 +202,7 @@ export default function ChatPage() {
 
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center text-center mt-12 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="p-4 bg-gradient-to-tr from-orange-50 to-amber-50 dark:from-neutral-900 dark:to-neutral-950 rounded-full shadow-md border border-orange-100/50 dark:border-neutral-800 mb-6">
+                <div className="p-4 bg-linear-to-tr from-orange-50 to-amber-50 dark:from-neutral-900 dark:to-neutral-950 rounded-full shadow-md border border-orange-100/50 dark:border-neutral-800 mb-6">
                   <ChefLogo size={64} priority />
                 </div>
                 <h2 className="text-2xl font-black text-neutral-800 dark:text-neutral-100 tracking-tight">
@@ -249,7 +249,7 @@ export default function ChatPage() {
 
                     <div
                       className={`relative px-4.5 py-3 rounded-2xl text-sm leading-relaxed ${msg.role === "user"
-                        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-tr-none shadow-md shadow-orange-500/10 max-w-[80%]"
+                        ? "bg-linear-to-r from-orange-500 to-red-600 text-white rounded-tr-none shadow-md shadow-orange-500/10 max-w-[80%]"
                         : "bg-white/85 dark:bg-neutral-900/85 text-neutral-800 dark:text-neutral-200 rounded-tl-none border border-neutral-100 dark:border-neutral-800/80 shadow-xs max-w-[80%]"
                         }`}
                     >
@@ -258,7 +258,7 @@ export default function ChatPage() {
 
                     {/* User Avatar */}
                     {msg.role === "user" && (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-md">
+                      <div className="w-8 h-8 rounded-full bg-linear-to-tr from-amber-500 to-orange-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-md">
                         U
                       </div>
                     )}
@@ -323,7 +323,7 @@ export default function ChatPage() {
                   </button>
                   <Link
                     href="/settings"
-                    className="flex-1 sm:flex-initial text-center bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md shadow-orange-500/10 transition-all cursor-pointer flex items-center justify-center"
+                    className="flex-1 sm:flex-initial text-center bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md shadow-orange-500/10 transition-all cursor-pointer flex items-center justify-center"
                   >
                     Upgrade to Pro
                   </Link>
@@ -348,7 +348,7 @@ export default function ChatPage() {
               <button
                 onClick={() => handleSend()}
                 disabled={loading || !input.trim() || rateLimitError !== null}
-                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white p-3 rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center shrink-0"
+                className="bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white p-3 rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center shrink-0"
                 aria-label="Send message"
               >
                 <svg className="w-4 h-4 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

@@ -66,7 +66,7 @@ export default function ChatRecipeCard({ recipe }: ChatRecipeCardProps) {
           className="w-full h-full object-cover transition-transform duration-500 hover:scale-102"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-neutral-950/20 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-neutral-950/80 via-neutral-950/20 to-transparent" />
 
         {/* Floating brand indicator */}
         <div className="absolute top-4 left-4 backdrop-blur-md bg-white/10 border border-white/20 px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-xs">
