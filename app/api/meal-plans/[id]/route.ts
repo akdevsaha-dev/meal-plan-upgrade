@@ -40,18 +40,57 @@ export const POST = withErrorHandler(async (
   }
 
   const body = await req.json();
+  let recipeId = body.recipeId;
 
-  const firstRecipe = await prisma.recipe.findFirst({ orderBy: { createdAt: "asc" } });
+  if (!recipeId) {
+    const firstRecipe = await prisma.recipe.findFirst({ orderBy: { createdAt: "asc" } });
+    if (!firstRecipe) {
+      return NextResponse.json({ error: "No recipes found in system" }, { status: 400 });
+    }
+    recipeId = firstRecipe.id;
+  }
 
   const mealPlanRecipe = await prisma.mealPlanRecipe.create({
     data: {
       day: body.day,
       mealType: body.mealType,
-      recipeId: firstRecipe!.id,
+      recipeId: recipeId,
       mealPlanId: id,
     },
     include: { recipe: true },
   });
 
   return NextResponse.json({ mealPlanRecipe }, { status: 201 });
+});
+
+export const DELETE = withErrorHandler(async (
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) => {
+  const { id } = await params;
+  const session = getUserFromRequest(req);
+  if (!session) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const mealPlanRecipeId = searchParams.get("mealPlanRecipeId");
+
+  if (!mealPlanRecipeId) {
+    return NextResponse.json({ error: "mealPlanRecipeId is required" }, { status: 400 });
+  }
+
+  const record = await prisma.mealPlanRecipe.findFirst({
+    where: { id: mealPlanRecipeId, mealPlanId: id },
+  });
+
+  if (!record) {
+    return NextResponse.json({ error: "Meal record not found in plan" }, { status: 404 });
+  }
+
+  await prisma.mealPlanRecipe.delete({
+    where: { id: mealPlanRecipeId },
+  });
+
+  return NextResponse.json({ success: true });
 });
