@@ -298,3 +298,17 @@ html.chaos-cursor-none * {
 .animate-modal-content {
   animation: modal-zoom-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+@keyframes float-orb-0 {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(25vw, -20vh) rotate(360deg); }
+}
+@keyframes float-orb-1 {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(-20vw, 25vh) rotate(-360deg); }
+}
+@keyframes float-orb-2 {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(15vw, 15vh) rotate(180deg); }
+}
+

@@ -4,8 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 function chaosDisabled(): boolean {
   const v = process.env.NEXT_PUBLIC_CHAOS;
-  if (v == null || v === "") return false;
-  return v === "0" || v.toLowerCase() === "false";
+  return v !== "1" && v?.toLowerCase() !== "true";
 }
 
 function headersForLog(h: HeadersInit | undefined): Record<string, string> {

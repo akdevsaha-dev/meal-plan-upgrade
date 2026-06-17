@@ -83,6 +83,17 @@ export default function ChatPage() {
       });
 
       if (!res.ok) {
+        if (res.status === 403) {
+          const errData = await res.json().catch(() => ({}));
+          const errMsg = errData.error || "Recipe limit reached. Please upgrade to Pro.";
+          if (!customText) {
+            setInput(textToSend);
+          }
+          setMessages(messages);
+          setRateLimitError(errMsg);
+          setLoading(false);
+          return;
+        }
         if (res.status === 429) {
           if (!customText) {
             setInput(textToSend);

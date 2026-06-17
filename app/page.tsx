@@ -8,9 +8,6 @@ import { useEffect, useState } from "react";
 const JUNK_ORB_COUNT = 52;
 
 export default function Home() {
-  console.log("[CHAOS render] Home");
-  const [tick, setTick] = useState(0);
-  const [tickB, setTickB] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -18,15 +15,6 @@ export default function Home() {
     setMounted(true);
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
-  }, []);
-
-  useEffect(() => {
-    const a = window.setInterval(() => setTick((t) => t + 1), 28);
-    const b = window.setInterval(() => setTickB((t) => t + 1), 41);
-    return () => {
-      window.clearInterval(a);
-      window.clearInterval(b);
-    };
   }, []);
 
   return (
@@ -65,12 +53,13 @@ export default function Home() {
           style={{
             width: 3 + (i % 3) * 2,
             height: 3 + (i % 3) * 2,
-            left: `${(50 + Math.sin(tick * 0.05 + i * 0.9) * 45).toFixed(2)}%`,
-            top: `${(50 + Math.cos(tickB * 0.04 + i * 0.73) * 45).toFixed(2)}%`,
+            left: `${(5 + (i * 17) % 90)}%`,
+            top: `${(5 + (i * 23) % 90)}%`,
             background: i % 2 === 0 ? "rgba(249, 115, 22, 0.4)" : "rgba(167, 139, 250, 0.4)",
             boxShadow: `0 0 ${6 + (i % 3) * 4}px ${i % 2 === 0 ? "rgba(249, 115, 22, 0.6)" : "rgba(167, 139, 250, 0.6)"}`,
-            transform: `rotate(${tick * 0.5 + i * 10}deg)`,
-            willChange: "left, top, transform",
+            animation: `float-orb-${i % 3} ${25 + (i * 11) % 35}s ease-in-out infinite alternate`,
+            animationDelay: `${-(i * 7) % 30}s`,
+            willChange: "transform",
           }}
           aria-hidden
         />
@@ -311,7 +300,7 @@ export default function Home() {
                   Excellent for starting out with weekly planner structure and manual recipe cataloging.
                 </p>
                 <ul className="space-y-4 mb-8">
-                  {["Standard Weekly Planner", "Save up to 10 Custom Recipes", "Community Support"].map((item, idx) => (
+                  {["Standard Weekly Planner", "Generate up to 10 recipes for free", "Community Support"].map((item, idx) => (
                     <li key={idx} className="flex items-center gap-3 text-sm text-gray-300">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 text-gray-400">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
@@ -341,12 +330,12 @@ export default function Home() {
                   <span className="text-gray-500 text-sm">/ month</span>
                 </div>
                 <p className="text-sm text-gray-400 mb-8 leading-relaxed">
-                  For home chefs who want the best AI integrations and unlimited recipe creation.
+                  For home chefs who want the best AI integrations and expanded recipe limits.
                 </p>
                 <ul className="space-y-4 mb-8">
                   {[
                     "Everything in Free Plan",
-                    "Unlimited Saved Recipes",
+                    "Generate up to 200 recipes for free",
                     "AI Recipe Bot Chat Generation",
                     "Ad-free Experience",
                     "Priority Premium Support"
