@@ -30,12 +30,12 @@ export async function resolveProSubscriptionPriceId(): Promise<string> {
     limit: 10,
   });
 
-  const price =
-    prices.data.find((p) => p.recurring != null) ?? prices.data[0];
-  if (!price?.id) {
-    throw new Error(
-      `No active recurring price on product ${productId}. Add one in Stripe Dashboard → Product → Pricing.`
-    );
+  const price = prices.data.find(
+    (p) => p.active && p.type === "recurring"
+  );
+
+  if (!price) {
+    throw new Error("No active recurring price found");
   }
 
   return price.id;

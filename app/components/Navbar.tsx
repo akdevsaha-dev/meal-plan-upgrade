@@ -11,7 +11,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [loggingOut, setLoggingOut] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<{ name: string; email: string; plan: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; plan: string; hasProAccess?: boolean } | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -39,6 +39,7 @@ export default function Navbar() {
             name: data.user.name,
             email: data.user.email,
             plan: data.user.plan,
+            hasProAccess: data.user.hasProAccess,
           };
           setUser(profile);
           localStorage.setItem("user", JSON.stringify(profile));
@@ -148,15 +149,15 @@ export default function Navbar() {
               </div>
 
               <div className="px-4.5 py-3">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${user?.plan?.toLowerCase() === "pro" || user?.plan?.toLowerCase() === "premium"
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${user?.hasProAccess
                   ? "bg-amber-50 text-amber-700 border-amber-200"
                   : "bg-gray-50 text-gray-600 border-gray-200"
                   }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${user?.plan?.toLowerCase() === "pro" || user?.plan?.toLowerCase() === "premium"
+                  <span className={`w-1.5 h-1.5 rounded-full ${user?.hasProAccess
                     ? "bg-amber-500 animate-pulse"
                     : "bg-gray-400"
                     }`} />
-                  {user?.plan || "Free"} Plan
+                  {user?.hasProAccess ? "Pro" : "Free"} Plan
                 </span>
               </div>
 

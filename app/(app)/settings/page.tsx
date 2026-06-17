@@ -10,6 +10,12 @@ interface User {
   email: string;
   name: string;
   plan: string;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+  subscriptionStatus?: string | null;
+  currentPeriodEnd?: string | null;
+  cancelAtPeriodEnd?: boolean | null;
+  hasProAccess?: boolean;
 }
 
 export default function SettingsPage() {
@@ -51,17 +57,21 @@ export default function SettingsPage() {
 
     try {
       const token = localStorage.getItem("token");
-      await fetch("/api/stripe/cancel", {
+      const res = await fetch("/api/stripe/cancel", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to cancel subscription (${res.status})`);
+      }
       alert("Your subscription has been cancelled.");
       window.location.reload();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to cancel subscription.");
+      alert(err.message || "Failed to cancel subscription.");
     }
   }
 
@@ -224,27 +234,27 @@ export default function SettingsPage() {
                     <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider">Current Account Plan</span>
                     <div className="flex items-center gap-2.5 mt-1">
                       <h3 className="text-xl font-bold text-gray-900">
-                        {user.plan === "pro" ? "Pro Plan" : "Free Plan"}
+                        {user.hasProAccess ? "Pro Plan" : "Free Plan"}
                       </h3>
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${user.plan === "pro"
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${user.hasProAccess
                         ? "bg-green-50 text-green-700 border border-green-100"
                         : "bg-gray-100 text-gray-600 border border-gray-200"
                         }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${user.plan === "pro" ? "bg-green-600" : "bg-gray-400"}`}></span>
-                        Active
+                        <span className={`w-1.5 h-1.5 rounded-full ${user.hasProAccess ? "bg-green-600" : "bg-gray-400"}`}></span>
+                        {user.hasProAccess ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider font-sans">Price</span>
                     <p className="text-lg font-extrabold text-gray-900 mt-1">
-                      {user.plan === "pro" ? "$9.99/mo" : "$0.00/mo"}
+                      {user.hasProAccess ? "$9.99/mo" : "$0.00/mo"}
                     </p>
                   </div>
                 </div>
 
                 <div className="pt-4 space-y-4">
-                  {user.plan === "free" ? (
+                  {!user.hasProAccess ? (
                     <div className="space-y-4">
                       <p className="text-sm text-gray-500 leading-relaxed font-medium">
                         Upgrade to Pro to unlock advanced AI-powered recipe generation, custom nutrition filters, and unlimited meal planning schedules.
@@ -261,12 +271,18 @@ export default function SettingsPage() {
                       <p className="text-sm text-gray-500 leading-relaxed font-medium">
                         All premium features are fully active on your account. If you would like to end your subscription, you can click the button below to cancel your recurring billing setup.
                       </p>
-                      <button
-                        onClick={handleCancelSubscription}
-                        className="bg-white hover:bg-red-50 hover:text-red-700 hover:border-red-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-bold border border-gray-200 transition-all cursor-pointer"
-                      >
-                        Cancel Plan
-                      </button>
+                      {!user.cancelAtPeriodEnd && (user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing") ? (
+                        <button
+                          onClick={handleCancelSubscription}
+                          className="bg-white hover:bg-red-50 hover:text-red-700 hover:border-red-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-bold border border-gray-200 transition-all cursor-pointer"
+                        >
+                          Cancel Plan
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                          Your subscription is canceling (access active until period end)
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>

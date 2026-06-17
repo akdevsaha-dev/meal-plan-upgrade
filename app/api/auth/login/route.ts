@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { signToken } from "@/lib/auth";
+import { signToken, hasProAccess } from "@/lib/auth";
 import { withErrorHandler } from "@/lib/apiWrapper";
 import { LoginSchema } from "@/validation/auth";
 
@@ -31,7 +31,18 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   const token = signToken({ userId: user.id, email: user.email });
 
   return NextResponse.json({
-    user: { id: user.id, email: user.email, name: user.name, plan: user.plan },
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      plan: user.plan,
+      stripeCustomerId: user.stripeCustomerId,
+      stripeSubscriptionId: user.stripeSubscriptionId,
+      subscriptionStatus: user.subscriptionStatus,
+      currentPeriodEnd: user.currentPeriodEnd,
+      cancelAtPeriodEnd: user.cancelAtPeriodEnd,
+      hasProAccess: hasProAccess(user),
+    },
     token,
   });
 });

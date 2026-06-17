@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getUserFromRequest, hasProAccess } from "@/lib/auth";
 import { withErrorHandler } from "@/lib/apiWrapper";
 
+export const runtime = "nodejs";
+
 export const GET = withErrorHandler(async (req: NextRequest) => {
   const session = getUserFromRequest(req);
   if (!session) {
@@ -30,6 +32,7 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
   }
 
   return NextResponse.json({
+    success: true,
     user: {
       ...user,
       hasProAccess: hasProAccess(user),

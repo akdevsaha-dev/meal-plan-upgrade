@@ -41,3 +41,18 @@ export function getUserFromRequest(req: NextRequest) {
   if (!token) return null;
   return verifyToken(token);
 }
+
+export function hasProAccess(user: {
+  subscriptionStatus?: string | null;
+  currentPeriodEnd?: Date | string | null;
+}): boolean {
+  if (!user.subscriptionStatus) return false;
+  if (!["active", "trialing"].includes(user.subscriptionStatus)) return false;
+  if (!user.currentPeriodEnd) return false;
+
+  const expiry = typeof user.currentPeriodEnd === "string"
+    ? new Date(user.currentPeriodEnd)
+    : user.currentPeriodEnd;
+
+  return expiry.getTime() > Date.now();
+}

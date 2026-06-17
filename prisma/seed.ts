@@ -16,6 +16,9 @@ async function main() {
       password: "password123",
       name: "Alice Johnson",
       plan: "pro",
+      subscriptionStatus: "active",
+      currentPeriodEnd: new Date("2030-01-01T00:00:00Z"),
+      cancelAtPeriodEnd: false,
     },
   });
 
