@@ -35,6 +35,7 @@ model Recipe {
   calories    Int?
   cuisine     String?
   dietaryTags String?
+  steps       String?
   ingredients Ingredient[]
   userId      String
   user        User             @relation(fields: [userId], references: [id])

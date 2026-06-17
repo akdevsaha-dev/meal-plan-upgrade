@@ -5,6 +5,24 @@ import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+function getTodayString() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getFutureDateString(baseDateStr: string, days: number) {
+  if (!baseDateStr) return "";
+  const d = new Date(baseDateStr + "T00:00:00");
+  d.setDate(d.getDate() + days);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 interface MealPlanRecipe {
   id: string;
   day: string;
@@ -26,8 +44,8 @@ export default function MealPlansPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(() => getTodayString());
+  const [endDate, setEndDate] = useState(() => getFutureDateString(getTodayString(), 7));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -75,8 +93,8 @@ export default function MealPlansPage() {
       }
 
       setName("");
-      setStartDate("");
-      setEndDate("");
+      setStartDate(getTodayString());
+      setEndDate(getFutureDateString(getTodayString(), 7));
       setIsModalOpen(false);
       await fetchPlans();
     } catch (err) {
@@ -213,7 +231,12 @@ export default function MealPlansPage() {
                       type="date"
                       required
                       value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
+                      min={getTodayString()}
+                      onChange={(e) => {
+                        const newStart = e.target.value;
+                        setStartDate(newStart);
+                        setEndDate(getFutureDateString(newStart, 7));
+                      }}
                       className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:outline-none focus:border-orange-500 transition-colors"
                     />
                   </div>
@@ -222,9 +245,9 @@ export default function MealPlansPage() {
                     <input
                       type="date"
                       required
+                      disabled
                       value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:outline-none focus:border-orange-500 transition-colors"
+                      className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-gray-400 cursor-not-allowed focus:outline-none"
                     />
                   </div>
                 </div>

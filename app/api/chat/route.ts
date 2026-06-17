@@ -19,8 +19,27 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
+  const history = await prisma.chatMessage.findMany({
+    where: { userId: session.userId },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const recipeIds = history
+    .map((m) => {
+      const match = m.content.match(/<!-- recipeId:(.*?) -->/);
+      return match ? match[1] : null;
+    })
+    .filter(Boolean) as string[];
+
+  const recipes = await prisma.recipe.findMany({
+    where: { id: { in: recipeIds } },
+    include: { ingredients: true },
+  });
+
   return NextResponse.json({
     model: DEFAULT_MODEL,
+    messages: history,
+    recipes,
   });
 });
 
@@ -93,9 +112,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   const history = await prisma.chatMessage.findMany({
     where: { userId: userId },
-    orderBy: { createdAt: "asc" },
+    orderBy: { createdAt: "desc" },
     take: MAX_HISTORY,
   });
+  history.reverse();
 
   const formattedMessages: Array<{ role: "user" | "assistant"; content: string }> = history.map((m) => ({
     role: m.role as "user" | "assistant",
@@ -115,18 +135,17 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   if (isRecipeRequest) {
     console.log(`[Recipe Intent Detected] Generating structured recipe for user ${userId}`);
 
-    const { object: recipe } = await generateObject({
-      model: openaiClient(DEFAULT_MODEL),
-      schema: RecipeSchema,
-      system: "You are a professional chef. Generate a realistic and delicious recipe based on the user's request. Fill in all fields appropriately.",
-      messages: formattedMessages,
-    });
-
-    const sanitized = sanitizeRecipe(recipe);
-
-    let createdRecipe = null;
     try {
-      createdRecipe = await prisma.recipe.create({
+      const { object: recipe } = await generateObject({
+        model: openaiClient(DEFAULT_MODEL),
+        schema: RecipeSchema,
+        system: "You are a professional chef. Generate a realistic and delicious recipe based on the user's request. Fill in all fields appropriately.",
+        messages: formattedMessages,
+      });
+
+      const sanitized = sanitizeRecipe(recipe);
+
+      let createdRecipe = await prisma.recipe.create({
         data: {
           title: sanitized.title,
           description: sanitized.description || "",
@@ -137,6 +156,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
           calories: sanitized.calories,
           cuisine: sanitized.cuisine,
           dietaryTags: sanitized.dietaryTags ? sanitized.dietaryTags.join(", ") : null,
+          steps: JSON.stringify(sanitized.steps),
           userId: userId,
           ingredients: {
             create: sanitized.ingredients.map((ing) => ({
@@ -152,38 +172,80 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
       try {
         const imagePrompt = sanitized.imagePrompt;
         const imageUrl = await generateRecipeImage(imagePrompt);
-        await prisma.recipe.update({
+        createdRecipe = await prisma.recipe.update({
           where: { id: createdRecipe.id },
           data: { imageUrl },
+          include: { ingredients: true },
         });
       } catch (err) {
         console.error("Recipe image generation failed in structured pipeline:", err);
       }
-    } catch (dbErr) {
-      console.error("Failed to write sanitized recipe to database:", dbErr);
+
+
+      const conciseMessage = `Recipe created successfully.
+Recipe: ${sanitized.title}
+Prep Time: ${sanitized.prepTime} min
+Cook Time: ${sanitized.cookTime} min
+Calories: ${sanitized.calories || "N/A"}
+Servings: ${sanitized.servings}
+View the recipe card below.
+
+<!-- recipeId:${createdRecipe.id} -->`;
+
+      await prisma.chatMessage.create({
+        data: {
+          role: "assistant",
+          content: conciseMessage,
+          userId: userId,
+        },
+      });
+
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(conciseMessage));
+          controller.close();
+        },
+      });
+
+      return new NextResponse(stream, {
+        headers: {
+          ...rateLimitHeaders,
+          "Content-Type": "text/plain; charset=utf-8",
+          "X-Recipe-Data": encodeURIComponent(JSON.stringify(createdRecipe)),
+        },
+      });
+
+    } catch (err) {
+      console.error("Structured recipe pipeline error, running fallback:", err);
+
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const fallbackText = `I encountered an issue generating your structured recipe card. Error: ${errMsg}. Please try again.`;
+
+      await prisma.chatMessage.create({
+        data: {
+          role: "assistant",
+          content: fallbackText,
+          userId: userId,
+        },
+      });
+
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(fallbackText));
+          controller.close();
+        },
+      });
+
+      return new NextResponse(stream, {
+        headers: {
+          ...rateLimitHeaders,
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      });
     }
 
-    const confirmationPrompt = `Write a short, friendly, natural-language confirmation message to the user that their recipe "${sanitized.title}" has been successfully generated and saved to their recipe collection. Summarize the recipe key parameters (e.g. cuisine: ${sanitized.cuisine || "general"}, prep time: ${sanitized.prepTime} mins, calories: ${sanitized.calories || "N/A"}). Do NOT output raw JSON or internal recipe object fields in the text. Keep it conversational.`;
-
-    const result = await streamText({
-      model: openaiClient(DEFAULT_MODEL),
-      prompt: confirmationPrompt,
-      async onFinish({ text }) {
-        try {
-          await prisma.chatMessage.create({
-            data: {
-              role: "assistant",
-              content: text,
-              userId: userId,
-            },
-          });
-        } catch (dbErr) {
-          console.error("Failed to write assistant response in structured pipeline:", dbErr);
-        }
-      },
-    });
-
-    return result.toTextStreamResponse({ headers: rateLimitHeaders });
   } else {
     const result = streamText({
       model: openaiClient(DEFAULT_MODEL),

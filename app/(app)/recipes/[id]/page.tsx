@@ -16,6 +16,7 @@ interface Recipe {
   calories: number | null;
   cuisine: string | null;
   dietaryTags: string | null;
+  steps?: string | null;
   ingredients: { id: string; name: string; amount: string; unit: string }[];
   user: { name: string; email: string };
 }
@@ -44,6 +45,15 @@ export default function RecipeDetailPage({
       ...prev,
       [ingredientId]: !prev[ingredientId],
     }));
+  }
+
+  let stepsArray: string[] = [];
+  if (recipe?.steps) {
+    try {
+      stepsArray = JSON.parse(recipe.steps);
+    } catch (e) {
+      console.error("Failed to parse recipe steps JSON:", e);
+    }
   }
 
   if (!recipe) {
@@ -174,6 +184,36 @@ export default function RecipeDetailPage({
               })}
             </div>
           </div>
+
+          {/* Instructions / Steps */}
+          {stepsArray.length > 0 && (
+            <div className="mt-10 pt-8 border-t border-gray-100">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2.5 bg-orange-50 text-orange-600 rounded-xl border border-orange-100/50">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.03 0 1.9.732 2.076 1.717m-1.123 18.003L18 21.75a2.25 2.25 0 0 0 2.25-2.25V6.25M3 3h2.25m0 0H3.75m1.5 0h.008v.008H5.25V3zm0 3h2.25m0 0H5.25m1.5 0h.008v.008H6.75V6zm0 3h2.25m0 0H6.75m1.5 0h.008v.008H8.25V9z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-extrabold text-gray-800">Instructions / Steps</h2>
+                  <p className="text-xs text-gray-400 mt-0.5 font-medium">Follow step-by-step to cook the recipe</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {stepsArray.map((step, idx) => (
+                  <div key={idx} className="flex gap-4 p-4.5 bg-gray-50/50 border border-gray-100/70 rounded-2xl">
+                    <div className="flex items-center justify-center w-6.5 h-6.5 rounded-full bg-orange-100 text-orange-600 text-xs font-black shrink-0">
+                      {idx + 1}
+                    </div>
+                    <p className="text-sm text-gray-700 leading-relaxed font-semibold">
+                      {step}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between text-xs text-gray-400 font-semibold">
             <span className="flex items-center gap-2">

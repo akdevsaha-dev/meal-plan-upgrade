@@ -2,6 +2,7 @@
 
 import ChefLogo from "@/app/components/ChefLogo";
 import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
+import ChatRecipeCard, { Recipe } from "@/app/components/ChatRecipeCard";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
@@ -17,23 +18,33 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [rateLimitError, setRateLimitError] = useState<string | null>(null);
+  const [recipes, setRecipes] = useState<Record<string, Recipe>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch("/api/chat", {
-      method: "GET",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then((r) => r.json())
-      .catch(() => { });
 
     if (token) {
-      fetch("/api/auth/me", {
+      fetch("/api/chat", {
+        method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((r) => r.json())
-        .then(() => { });
+        .then((data) => {
+          if (data.messages) {
+            setMessages(data.messages);
+          }
+          if (data.recipes) {
+            const recipeMap: Record<string, Recipe> = {};
+            data.recipes.forEach((r: Recipe) => {
+              recipeMap[r.id] = r;
+            });
+            setRecipes(recipeMap);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load chat history:", err);
+        });
     }
   }, []);
 
@@ -84,6 +95,19 @@ export default function ChatPage() {
         throw new Error(`Chat API error (${res.status})`);
       }
 
+      const recipeDataHeader = res.headers.get("X-Recipe-Data");
+      if (recipeDataHeader) {
+        try {
+          const recipe: Recipe = JSON.parse(decodeURIComponent(recipeDataHeader));
+          setRecipes((prev) => ({
+            ...prev,
+            [recipe.id]: recipe,
+          }));
+        } catch (e) {
+          console.error("Failed to parse recipe data header:", e);
+        }
+      }
+
       const reader = res.body?.getReader();
       if (!reader) {
         throw new Error("No response body reader available");
@@ -124,6 +148,15 @@ export default function ChatPage() {
     }
   }
 
+  function getMessageRecipeId(content: string): string | null {
+    const match = content.match(/<!-- recipeId:(.*?) -->/);
+    return match ? match[1] : null;
+  }
+
+  function cleanMessageContent(content: string): string {
+    return content.replace(/<!-- recipeId:(.*?) -->/g, "").trim();
+  }
+
   const suggestions = [
     "Give me a high-protein dinner recipe",
     "Suggest a quick low-carb lunch",
@@ -158,7 +191,7 @@ export default function ChatPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-900/40">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-100/50 dark:border-orange-900/40">
               <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
               Active Assistant
             </span>
@@ -199,35 +232,50 @@ export default function ChatPage() {
               </div>
             )}
 
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex items-start gap-3.5 ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in duration-300`}
-              >
-                {/* Assistant Avatar */}
-                {msg.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-neutral-800 border border-orange-200/40 dark:border-neutral-700/40 flex items-center justify-center shrink-0 shadow-xs">
-                    <ChefLogo size={20} priority href={null} />
-                  </div>
-                )}
+            {messages.map((msg, i) => {
+              const recipeId = getMessageRecipeId(msg.content);
+              const cleanText = cleanMessageContent(msg.content);
+              const associatedRecipe = recipeId ? recipes[recipeId] : null;
 
-                <div
-                  className={`relative px-4.5 py-3 rounded-2xl text-sm leading-relaxed ${msg.role === "user"
-                    ? "bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-tr-none shadow-md shadow-orange-500/10 max-w-[80%]"
-                    : "bg-white/85 dark:bg-neutral-900/85 text-neutral-800 dark:text-neutral-200 rounded-tl-none border border-neutral-100 dark:border-neutral-800/80 shadow-xs max-w-[80%]"
-                    }`}
-                >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+              return (
+                <div key={i} className="space-y-4">
+                  {/* Text bubble */}
+                  <div
+                    className={`flex items-start gap-3.5 ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in duration-300`}
+                  >
+                    {/* Assistant Avatar */}
+                    {msg.role === "assistant" && (
+                      <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-neutral-800 border border-orange-200/40 dark:border-neutral-700/40 flex items-center justify-center shrink-0 shadow-xs">
+                        <ChefLogo size={20} priority href={null} />
+                      </div>
+                    )}
+
+                    <div
+                      className={`relative px-4.5 py-3 rounded-2xl text-sm leading-relaxed ${msg.role === "user"
+                        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-tr-none shadow-md shadow-orange-500/10 max-w-[80%]"
+                        : "bg-white/85 dark:bg-neutral-900/85 text-neutral-800 dark:text-neutral-200 rounded-tl-none border border-neutral-100 dark:border-neutral-800/80 shadow-xs max-w-[80%]"
+                        }`}
+                    >
+                      <p className="whitespace-pre-wrap">{cleanText}</p>
+                    </div>
+
+                    {/* User Avatar */}
+                    {msg.role === "user" && (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-md">
+                        U
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Render recipe card directly below the assistant message bubble */}
+                  {associatedRecipe && (
+                    <div className="flex justify-start pl-11.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <ChatRecipeCard recipe={associatedRecipe} />
+                    </div>
+                  )}
                 </div>
-
-                {/* User Avatar */}
-                {msg.role === "user" && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-md">
-                    U
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
 
             {/* Premium Thinking/Loading state */}
             {loading && (
