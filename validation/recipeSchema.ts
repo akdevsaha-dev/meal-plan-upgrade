@@ -11,7 +11,7 @@ export const RecipeIngredientSchema = z
 export const RecipeSchema = z
   .object({
     title: z.string({ error: "Title is required" }).min(1, "Title cannot be empty"),
-    description: z.string().optional(),
+    description: z.string({ error: "Description is required" }),
     prepTime: z.number({ error: "Prep time is required" }).nonnegative("Prep time must be at least 0"),
     cookTime: z.number({ error: "Cook time is required" }).nonnegative("Cook time must be at least 0"),
     servings: z.number({ error: "Servings is required" }).positive("Servings must be greater than 0"),
