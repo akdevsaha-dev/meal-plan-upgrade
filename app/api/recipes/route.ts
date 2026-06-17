@@ -10,6 +10,9 @@ export const GET = withErrorHandler(async (req: NextRequest) => {
   }
 
   const recipes = await prisma.recipe.findMany({
+    where: {
+      userId: session.userId,
+    },
     include: {
       ingredients: true,
       user: { select: { name: true } },

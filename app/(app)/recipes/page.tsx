@@ -22,15 +22,23 @@ export default function RecipesPage() {
   console.log("[CHAOS render] RecipesPage");
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    setIsLoading(true);
     fetch("/api/recipes", {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then((r) => r.json())
-      .then((data) => setRecipes(data.recipes || []))
-      .catch(() => setRecipes([]));
+      .then((data) => {
+        setRecipes(data.recipes || []);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setRecipes([]);
+        setIsLoading(false);
+      });
   }, []);
 
   function handleSaveRecipe() { }
@@ -77,10 +85,8 @@ export default function RecipesPage() {
           </button>
         </div>
 
-        {/* Improved Premium Search Box */}
         <div className="mb-8 max-w-xl">
           <div className="relative flex items-center group">
-            {/* Search Icon */}
             <div className="absolute left-4 text-gray-400 group-focus-within:text-orange-500 transition-colors pointer-events-none">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.603 10.603z" />
@@ -95,7 +101,6 @@ export default function RecipesPage() {
               className="w-full pl-12 pr-10 py-3.5 bg-white border border-gray-200 rounded-2xl shadow-xs text-sm font-medium placeholder-gray-400 text-gray-800 transition-all duration-200 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 hover:border-gray-300"
             />
 
-            {/* Clear Button */}
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
@@ -109,7 +114,6 @@ export default function RecipesPage() {
             )}
           </div>
 
-          {/* Results Counter */}
           {searchQuery && (
             <p className="text-xs text-gray-500 mt-2.5 font-medium animate-in fade-in slide-in-from-top-1 duration-150">
               {filteredRecipes.length === 0 ? (
@@ -121,16 +125,40 @@ export default function RecipesPage() {
           )}
         </div>
 
-        {/* Recipes Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredRecipes.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              onDelete={handleDeleteRecipe}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-500 font-medium">Loading your recipes...</p>
+          </div>
+        ) : recipes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 px-4 bg-white border border-dashed border-gray-300 rounded-3xl shadow-sm text-center">
+            <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-orange-500">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Recipe Catalog is Empty</h2>
+            <p className="text-gray-500 max-w-md mb-8">
+              It looks like you haven't saved any recipes yet. Start building your collection to plan meals effortlessly!
+            </p>
+            <button
+              onClick={() => window.location.href = '/chat'}
+              className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:bg-orange-700 hover:shadow-lg transition-all"
+            >
+              Create via Recipe Bot
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredRecipes.map((recipe) => (
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                onDelete={handleDeleteRecipe}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

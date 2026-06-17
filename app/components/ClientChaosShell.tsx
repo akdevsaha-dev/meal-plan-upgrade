@@ -15,21 +15,20 @@ function headersForLog(h: HeadersInit | undefined): Record<string, string> {
   return { ...h };
 }
 
-/** Red chef hat pointer overlay (SVG). */
 function ChefHatCursor({ x, y }: { x: number; y: number }) {
   return (
     <svg
       aria-hidden
       className="chaos-chef-hat-cursor"
-      width={88}
-      height={72}
+      width={32}
+      height={26}
       style={{
         position: "fixed",
-        left: x - 36,
-        top: y - 8,
+        left: x - 3,
+        top: y - 3,
         zIndex: 2147483646,
         pointerEvents: "none",
-        filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.35))",
+        filter: "drop-shadow(1px 2px 2px rgba(0,0,0,0.3))",
       }}
       viewBox="0 0 88 72"
     >
@@ -139,10 +138,12 @@ export default function ClientChaosShell({ children }: { children: ReactNode }) 
   }
 
   return (
-    <div className="chaos-root min-h-full flex flex-col chaos-cpu-burn">
-      <div className="chaos-heat-layer" aria-hidden />
+    <>
+      <div className="chaos-root min-h-full flex flex-col chaos-cpu-burn">
+        <div className="chaos-heat-layer" aria-hidden />
+        {children}
+      </div>
       <ChefHatCursor x={mouse.x} y={mouse.y} />
-      {children}
-    </div>
+    </>
   );
 }
