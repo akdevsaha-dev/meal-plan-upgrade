@@ -8,6 +8,7 @@ import { SYSTEM_PROMPT } from "@/lib/chefPrompt";
 import { RecipeSchema } from "@/validation/recipeSchema";
 import { sanitizeRecipe } from "@/lib/sanitizeRecipe";
 import { streamText, generateText, generateObject } from "ai";
+import { checkChatRateLimit } from "@/lib/rate-limit";
 
 const MAX_HISTORY = 20;
 const MAX_MESSAGE_LENGTH = 2000;
@@ -29,6 +30,36 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
+  const userId = session.userId;
+  const rateLimitResult = await checkChatRateLimit(userId);
+
+  if (!rateLimitResult.allowed) {
+    const errorMsg = rateLimitResult.limit === 10 ? "Daily limit reached" : "Hourly limit reached";
+    return NextResponse.json(
+      {
+        error: errorMsg,
+        limit: rateLimitResult.limit,
+        remaining: rateLimitResult.remaining,
+        resetAt: rateLimitResult.resetAt,
+        upgradeAvailable: rateLimitResult.upgradeAvailable,
+      },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(rateLimitResult.limit),
+          "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+          "X-RateLimit-Reset": String(rateLimitResult.resetAt),
+        },
+      }
+    );
+  }
+
+  const rateLimitHeaders = {
+    "X-RateLimit-Limit": String(rateLimitResult.limit),
+    "X-RateLimit-Remaining": String(rateLimitResult.remaining),
+    "X-RateLimit-Reset": String(rateLimitResult.resetAt),
+  };
+
   const { messages } = await req.json();
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "Invalid messages payload" }, { status: 400 });
@@ -47,8 +78,6 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   if (messageText.length > MAX_MESSAGE_LENGTH) {
     return NextResponse.json({ error: "Message too large" }, { status: 400 });
   }
-
-  const userId = session.userId;
 
   if (!process.env.AI_GATEWAY_API_KEY || process.env.AI_GATEWAY_API_KEY.trim() === "") {
     throw new Error("AI_GATEWAY_API_KEY is missing or empty");
@@ -154,7 +183,7 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
       },
     });
 
-    return result.toTextStreamResponse();
+    return result.toTextStreamResponse({ headers: rateLimitHeaders });
   } else {
     const result = streamText({
       model: openaiClient(DEFAULT_MODEL),
@@ -176,6 +205,6 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
       },
     });
 
-    return result.toTextStreamResponse();
+    return result.toTextStreamResponse({ headers: rateLimitHeaders });
   }
 });
