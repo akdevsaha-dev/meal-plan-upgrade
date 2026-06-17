@@ -26,6 +26,10 @@ export const GET = withErrorHandler(async (
     return NextResponse.json({ error: "Meal plan not found" }, { status: 404 });
   }
 
+  if (mealPlan.userId !== session.userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   return NextResponse.json({ mealPlan });
 });
 
@@ -37,6 +41,18 @@ export const POST = withErrorHandler(async (
   const session = getUserFromRequest(req);
   if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const mealPlan = await prisma.mealPlan.findUnique({
+    where: { id },
+  });
+
+  if (!mealPlan) {
+    return NextResponse.json({ error: "Meal plan not found" }, { status: 404 });
+  }
+
+  if (mealPlan.userId !== session.userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body = await req.json();
@@ -71,6 +87,18 @@ export const DELETE = withErrorHandler(async (
   const session = getUserFromRequest(req);
   if (!session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const mealPlan = await prisma.mealPlan.findUnique({
+    where: { id },
+  });
+
+  if (!mealPlan) {
+    return NextResponse.json({ error: "Meal plan not found" }, { status: 404 });
+  }
+
+  if (mealPlan.userId !== session.userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { searchParams } = new URL(req.url);

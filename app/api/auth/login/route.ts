@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { signToken, hasProAccess } from "@/lib/auth";
 import { withErrorHandler } from "@/lib/apiWrapper";
 import { LoginSchema } from "@/validation/auth";
+import bcrypt from "bcryptjs";
 
 export const POST = withErrorHandler(async (req: NextRequest) => {
   const body = await req.json();
@@ -23,10 +24,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  // const isValidPassword = await bcrypt.compare(password, user.password);
-  // if (!isValidPassword) {
-  //   return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-  // }
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  if (!isValidPassword) {
+    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+  }
 
   const token = signToken({ userId: user.id, email: user.email });
 

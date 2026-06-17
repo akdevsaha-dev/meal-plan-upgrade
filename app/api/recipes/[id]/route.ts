@@ -39,6 +39,15 @@ export const PUT = withErrorHandler(async (
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
+  const existingRecipe = await prisma.recipe.findUnique({ where: { id } });
+  if (!existingRecipe) {
+    return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
+  }
+
+  if (existingRecipe.userId !== session.userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const body = await req.json();
 
   const recipe = await prisma.recipe.update({
