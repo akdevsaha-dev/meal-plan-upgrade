@@ -39,7 +39,6 @@ export default function MealPlanDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  console.log("[CHAOS render] MealPlanDetailPage", id);
 
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [recipes, setRecipes] = useState<RecipeOption[]>([]);

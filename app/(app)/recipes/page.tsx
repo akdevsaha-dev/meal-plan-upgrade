@@ -20,7 +20,6 @@ interface Recipe {
 }
 
 export default function RecipesPage() {
-  console.log("[CHAOS render] RecipesPage");
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -232,7 +231,6 @@ function RecipeCard({
   recipe: Recipe;
   onDelete: (id: string) => void;
 }) {
-  console.log("[CHAOS render] RecipeCard", recipe.id);
   return (
     <div className="bg-white border border-gray-200 overflow-hidden shadow-xs hover:shadow-md hover:translate-y-[-2px] transition-all duration-200 flex flex-col h-full rounded-2xl">
       <img

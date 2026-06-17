@@ -27,7 +27,6 @@ export default function RecipeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  console.log("[CHAOS render] RecipeDetailPage", id);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Record<string, boolean>>({});
 

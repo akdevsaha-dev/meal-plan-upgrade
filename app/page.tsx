@@ -373,14 +373,14 @@ export default function Home() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
             <ChefLogo size={20} href={null} />
-            <span className="font-bold text-gray-400 uppercase tracking-wider">ChefAI</span>
+            <span className="font-bold text-gray-400 uppercase tracking-wider">MealPlan</span>
           </div>
           <div className="flex gap-8">
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
             <a href="/login" className="hover:text-white transition-colors">Login</a>
           </div>
-          <span>© {new Date().getFullYear()} ChefAI. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} MealPlan. All rights reserved.</span>
         </div>
       </footer>
     </div>

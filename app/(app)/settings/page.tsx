@@ -19,7 +19,6 @@ interface User {
 }
 
 export default function SettingsPage() {
-  console.log("[CHAOS render] SettingsPage");
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
 

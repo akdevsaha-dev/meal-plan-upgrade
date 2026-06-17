@@ -135,7 +135,6 @@ function SuccessContent() {
 }
 
 export default function CheckoutSuccessPage() {
-  console.log("[CHAOS render] CheckoutSuccessPage");
   return (
     <div className="relative flex min-h-screen items-center justify-center">
       <div className="absolute inset-0 z-0 bg-green-50" aria-hidden />

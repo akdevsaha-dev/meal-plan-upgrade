@@ -6,7 +6,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 
 export default function Navbar() {
-  console.log("[CHAOS render] Navbar");
   const router = useRouter();
   const pathname = usePathname();
   const [loggingOut, setLoggingOut] = useState(false);

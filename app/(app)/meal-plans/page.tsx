@@ -39,7 +39,6 @@ interface MealPlan {
 }
 
 export default function MealPlansPage() {
-  console.log("[CHAOS render] MealPlansPage");
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);

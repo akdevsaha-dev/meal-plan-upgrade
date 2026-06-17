@@ -4,7 +4,6 @@ import ChefLogo from "@/app/components/ChefLogo";
 import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
 
 export default function CheckoutCancelPage() {
-  console.log("[CHAOS render] CheckoutCancelPage");
   return (
     <div className="relative flex min-h-screen items-center justify-center">
       <div className="absolute inset-0 z-0 bg-red-50" aria-hidden />
