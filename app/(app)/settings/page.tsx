@@ -29,6 +29,11 @@ export default function SettingsPage() {
   const [deleteInputText, setDeleteInputText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelResultModalOpen, setIsCancelResultModalOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -51,10 +56,13 @@ export default function SettingsPage() {
     }
   }, []);
 
-  async function handleCancelSubscription() {
-    const confirmCancel = window.confirm("Are you sure you want to cancel your subscription?");
-    if (!confirmCancel) return;
+  function handleCancelSubscription() {
+    setIsCancelModalOpen(true);
+  }
 
+  async function executeCancelSubscription() {
+    setIsCancelling(true);
+    setCancelError(null);
     try {
       const token = localStorage.getItem("token");
       const res = await fetch("/api/stripe/cancel", {
@@ -67,11 +75,22 @@ export default function SettingsPage() {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || `Failed to cancel subscription (${res.status})`);
       }
-      alert("Your subscription has been cancelled.");
-      window.location.reload();
+      setIsCancelModalOpen(false);
+      setIsCancelResultModalOpen(true);
     } catch (err: any) {
       console.error(err);
-      alert(err.message || "Failed to cancel subscription.");
+      setCancelError(err.message || "Failed to cancel subscription.");
+      setIsCancelModalOpen(false);
+      setIsCancelResultModalOpen(true);
+    } finally {
+      setIsCancelling(false);
+    }
+  }
+
+  function handleResultModalClose() {
+    setIsCancelResultModalOpen(false);
+    if (!cancelError) {
+      window.location.reload();
     }
   }
 
@@ -357,6 +376,110 @@ export default function SettingsPage() {
                   {isDeleting ? "Deleting..." : "Confirm"}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUBSCRIPTION CANCELLATION CONFIRMATION MODAL */}
+        {isCancelModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Modal backdrop */}
+            <div
+              className="absolute inset-0 bg-gray-950/60 backdrop-blur-md transition-opacity duration-300 animate-in fade-in"
+              onClick={() => !isCancelling && setIsCancelModalOpen(false)}
+            />
+
+            {/* Modal content */}
+            <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-md w-full p-8 text-center animate-in fade-in zoom-in-95 duration-200 ease-out z-10">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 mb-6 shadow-sm border border-rose-100">
+                <svg className="h-8 w-8 text-rose-600 animate-pulse" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+
+              <h3 className="text-2xl font-black tracking-tight text-gray-900 mb-3">Cancel subscription?</h3>
+              <p className="text-sm text-gray-500 mb-8 leading-relaxed px-2">
+                We're really sad to see you go! You will lose access to premium AI-assisted meal planning, custom nutrition filters, and advanced recipe generation at the end of your billing cycle.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => setIsCancelModalOpen(false)}
+                  disabled={isCancelling}
+                  className="flex-1 px-5 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                >
+                  Keep Pro Plan
+                </button>
+                <button
+                  onClick={executeCancelSubscription}
+                  disabled={isCancelling}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-md shadow-red-600/10 hover:shadow-lg hover:shadow-red-600/20 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                >
+                  {isCancelling ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Processing...
+                    </span>
+                  ) : (
+                    "Yes, Cancel Plan"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUBSCRIPTION CANCELLATION RESULT MODAL */}
+        {isCancelResultModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Modal backdrop */}
+            <div
+              className="absolute inset-0 bg-gray-950/60 backdrop-blur-md transition-opacity duration-300 animate-in fade-in"
+              onClick={() => !cancelError && handleResultModalClose()}
+            />
+
+            {/* Modal content */}
+            <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-sm w-full p-8 text-center animate-in fade-in zoom-in-95 duration-200 ease-out z-10">
+              {cancelError ? (
+                <>
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 mb-6 shadow-sm border border-rose-100">
+                    <svg className="h-8 w-8 text-rose-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-black tracking-tight text-gray-900 mb-3">Cancellation Failed</h3>
+                  <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+                    {cancelError}
+                  </p>
+                  <button
+                    onClick={() => setIsCancelResultModalOpen(false)}
+                    className="w-full bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                  >
+                    Close
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 mb-6 shadow-sm border border-emerald-100">
+                    <svg className="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-black tracking-tight text-gray-900 mb-3">Plan Cancelled</h3>
+                  <p className="text-sm text-gray-500 mb-8 leading-relaxed px-2">
+                    Your subscription has been successfully cancelled. You will continue to have full Pro access until the end of your current billing period.
+                  </p>
+                  <button
+                    onClick={handleResultModalClose}
+                    className="w-full bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                  >
+                    Got it, thanks
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
