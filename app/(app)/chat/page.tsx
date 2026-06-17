@@ -165,7 +165,7 @@ export default function ChatPage() {
 
   return (
     <div className="relative flex h-[calc(100vh-64px)] flex-col font-sans overflow-hidden">
-      {/* Dynamic Background */}
+
       <div
         className="absolute inset-0 z-0 bg-gradient-to-tr from-amber-50/20 via-stone-50/40 to-orange-50/20 dark:from-neutral-950 dark:via-neutral-900/60 dark:to-neutral-950"
         aria-hidden="true"
@@ -174,7 +174,6 @@ export default function ChatPage() {
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col">
 
-        {/* Custom Premium Header */}
         <div className="backdrop-blur-md bg-white/70 dark:bg-neutral-900/75 border-b border-neutral-100 dark:border-neutral-800/60 px-6 py-4 flex justify-between items-center shadow-xs">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -198,7 +197,6 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* Chat Message Box */}
         <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
           <div className="max-w-4xl mx-auto space-y-6">
 
@@ -214,7 +212,6 @@ export default function ChatPage() {
                   Your premium AI companion. Ask me to formulate, adapt, scale, or explain recipes and custom cooking procedures.
                 </p>
 
-                {/* Onboarding Suggestion Chips */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10 w-full max-w-2xl px-4">
                   {suggestions.map((text, idx) => (
                     <button

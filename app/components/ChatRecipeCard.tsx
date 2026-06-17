@@ -35,7 +35,6 @@ export default function ChatRecipeCard({ recipe }: ChatRecipeCardProps) {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
 
-  // Safely parse steps array from JSON string or return empty array if missing/invalid
   let stepsArray: string[] = [];
   if (recipe.steps) {
     try {
@@ -90,8 +89,8 @@ export default function ChatRecipeCard({ recipe }: ChatRecipeCardProps) {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all duration-200 cursor-pointer ${activeTab === tab
-                ? "text-orange-600 border-orange-500 dark:text-orange-400 dark:border-orange-400"
-                : "text-neutral-400 border-transparent hover:text-neutral-600 dark:hover:text-neutral-300"
+              ? "text-orange-600 border-orange-500 dark:text-orange-400 dark:border-orange-400"
+              : "text-neutral-400 border-transparent hover:text-neutral-600 dark:hover:text-neutral-300"
               }`}
           >
             {tab}
@@ -167,8 +166,8 @@ export default function ChatRecipeCard({ recipe }: ChatRecipeCardProps) {
                     key={idx}
                     onClick={() => toggleIngredient(idx)}
                     className={`flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-200 cursor-pointer select-none ${isChecked
-                        ? "bg-neutral-50/60 dark:bg-neutral-950/20 border-neutral-200/50 dark:border-neutral-900/40 text-neutral-400 dark:text-neutral-500 line-through"
-                        : "bg-white dark:bg-neutral-900/40 border-neutral-200/70 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-700"
+                      ? "bg-neutral-50/60 dark:bg-neutral-950/20 border-neutral-200/50 dark:border-neutral-900/40 text-neutral-400 dark:text-neutral-500 line-through"
+                      : "bg-white dark:bg-neutral-900/40 border-neutral-200/70 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-700"
                       }`}
                   >
                     <input

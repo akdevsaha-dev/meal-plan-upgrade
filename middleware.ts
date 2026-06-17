@@ -8,12 +8,10 @@ export const config = {
 };
 
 export async function middleware(req: NextRequest) {
-  // Only apply rate limiting to POST requests (e.g. login and registration actions)
   if (req.method !== "POST") {
     return NextResponse.next();
   }
 
-  // Get client IP address with proper header fallback support
   const forwarded = req.headers.get("x-forwarded-for");
   const ip = forwarded
     ? forwarded.split(",")[0].trim()
