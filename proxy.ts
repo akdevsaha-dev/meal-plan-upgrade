@@ -7,7 +7,7 @@ export const config = {
   ],
 };
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   if (req.method !== "POST") {
     return NextResponse.next();
   }
@@ -52,7 +52,7 @@ export async function middleware(req: NextRequest) {
       }
     }
   } catch (err) {
-    console.error("Auth middleware rate limiting loopback failed, failing open for safety:", err);
+    console.error("Auth proxy rate limiting loopback failed, failing open for safety:", err);
   }
 
   return NextResponse.next();
