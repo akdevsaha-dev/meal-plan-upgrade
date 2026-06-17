@@ -7,7 +7,7 @@ import { withErrorHandler } from "@/lib/apiWrapper";
 import { SYSTEM_PROMPT } from "@/lib/chefPrompt";
 import { RecipeSchema } from "@/validation/recipeSchema";
 import { sanitizeRecipe } from "@/lib/sanitizeRecipe";
-import { streamText, generateText, generateObject } from "ai";
+import { streamText, generateText, Output } from "ai";
 import { checkChatRateLimit } from "@/lib/rate-limit";
 
 const MAX_HISTORY = 20;
@@ -134,11 +134,12 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
   if (isRecipeRequest) {
     console.log(`[Recipe Intent Detected] Generating structured recipe for user ${userId}`);
-
     try {
-      const { object: recipe } = await generateObject({
+      const { output: recipe } = await generateText({
         model: openaiClient(DEFAULT_MODEL),
-        schema: RecipeSchema,
+        output: Output.object({
+          schema: RecipeSchema,
+        }),
         system: "You are a professional chef. Generate a realistic and delicious recipe based on the user's request. Fill in all fields appropriately.",
         messages: formattedMessages,
       });
