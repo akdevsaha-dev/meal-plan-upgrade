@@ -71,7 +71,7 @@ export default function Upgrade() {
     <section
       ref={sectionRef}
       id="upgrade"
-      className={`${montserrat.variable} w-full bg-[#F5F3ED] py-20 px-6 sm:px-12 md:px-16 lg:px-24 relative z-30 font-[family-name:var(--font-montserrat)]`}
+      className={`${montserrat.variable} w-full bg-[#F5F3ED] py-20 px-6 sm:px-12 md:px-16 lg:px-24 relative z-30 font-(family-name:--font-montserrat)`}
     >
       <div className="max-w-7xl mx-auto">
         <div

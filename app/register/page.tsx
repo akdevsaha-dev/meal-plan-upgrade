@@ -29,8 +29,29 @@ export default function RegisterPage() {
     setError("");
     setFieldErrors({});
 
-    if (password !== confirmPassword) {
+    const errors: Record<string, string[]> = {};
+    if (!name.trim()) {
+      errors.name = ["Name cannot be empty"];
+    }
+    if (!email) {
+      errors.email = ["Email is required"];
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      errors.email = ["Must be a valid email address"];
+    }
+    if (!password) {
+      errors.password = ["Password is required"];
+    } else if (password.length < 8) {
+      errors.password = ["Password must be at least 8 characters"];
+    }
+    if (!confirmPassword) {
+      errors.confirmPassword = ["Confirm Password is required"];
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = ["Passwords do not match"];
       setError("Passwords do not match");
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
@@ -69,10 +90,8 @@ export default function RegisterPage() {
     <main
       className={`${montserrat.variable} font-sans flex flex-col lg:flex-row w-full min-h-screen lg:h-screen bg-[#FAF9F6] text-[#111111] p-4 sm:p-6 lg:p-8 gap-6 lg:gap-8 overflow-y-auto lg:overflow-hidden`}
     >
-      {/* Left side: Registration form */}
       <div className="w-full lg:w-[45%] flex flex-col justify-between min-h-[620px] lg:h-full py-6 px-4 sm:px-8">
 
-        {/* Brand Header */}
         <div className="flex items-center gap-2">
           <CaterLogo size={24} />
           <span className="text-xs font-light tracking-[0.4em] uppercase text-neutral-900 select-none">
@@ -80,9 +99,8 @@ export default function RegisterPage() {
           </span>
         </div>
 
-        {/* Center registration form */}
         <div className="w-full max-w-sm my-auto py-4">
-          <h1 className="text-3xl sm:text-4xl font-light tracking-[0.1em] uppercase text-neutral-900 mb-6 select-none">
+          <h1 className="text-3xl sm:text-4xl font-light tracking-widest uppercase text-neutral-900 mb-6 select-none">
             Create Account
           </h1>
 
@@ -95,9 +113,8 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} method="POST" className="space-y-4">
+          <form onSubmit={handleSubmit} method="POST" noValidate className="space-y-4">
 
-            {/* Name Field */}
             <div>
               <div className="flex justify-between items-baseline mb-1.5">
                 <label htmlFor="name" className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
@@ -133,7 +150,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Email Field */}
             <div>
               <div className="flex justify-between items-baseline mb-1.5">
                 <label htmlFor="email" className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
@@ -169,7 +185,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Password Field */}
             <div>
               <div className="flex justify-between items-baseline mb-1.5">
                 <label htmlFor="password" className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
@@ -216,7 +231,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Confirm Password Field */}
             <div>
               <div className="flex justify-between items-baseline mb-1.5">
                 <label htmlFor="confirmPassword" className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
@@ -257,7 +271,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <div className="pt-2">
               <button
                 type="submit"
@@ -278,7 +291,6 @@ export default function RegisterPage() {
           </form>
         </div>
 
-        {/* Brand Footer */}
         <div className="text-xs font-semibold text-neutral-400 select-none">
           Already have an account?{" "}
           <a href="/login" className="text-neutral-900 hover:underline transition-all">
@@ -288,7 +300,6 @@ export default function RegisterPage() {
 
       </div>
 
-      {/* Right side: Interactive video container */}
       <div className="hidden lg:block lg:w-[55%] h-full relative">
         <InteractiveVideoCard />
       </div>

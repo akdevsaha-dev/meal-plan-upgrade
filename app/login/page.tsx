@@ -25,6 +25,22 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setFieldErrors({});
+
+    const errors: Record<string, string[]> = {};
+    if (!email) {
+      errors.email = ["Email is required"];
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      errors.email = ["Must be a valid email address"];
+    }
+    if (!password) {
+      errors.password = ["Password is required"];
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -60,10 +76,8 @@ export default function LoginPage() {
     <main
       className={`${montserrat.variable} font-sans flex flex-col lg:flex-row w-full min-h-screen lg:h-screen bg-[#FAF9F6] text-[#111111] p-4 sm:p-6 lg:p-8 gap-6 lg:gap-8 overflow-y-auto lg:overflow-hidden`}
     >
-      {/* Left side: Authentication form */}
       <div className="w-full lg:w-[45%] flex flex-col justify-between min-h-[550px] lg:h-full py-8 px-4 sm:px-8">
 
-        {/* Brand Header */}
         <div className="flex items-center gap-2">
           <CaterLogo size={24} />
           <span className="text-xs font-light tracking-[0.4em] uppercase text-neutral-900 select-none">
@@ -71,9 +85,8 @@ export default function LoginPage() {
           </span>
         </div>
 
-        {/* Center sign-in form */}
         <div className="w-full max-w-sm my-auto">
-          <h1 className="text-3xl sm:text-4xl font-light tracking-[0.1em] uppercase text-neutral-900 mb-8 select-none">
+          <h1 className="text-3xl sm:text-4xl font-light tracking-widest uppercase text-neutral-900 mb-8 select-none">
             Sign in
           </h1>
 
@@ -87,7 +100,7 @@ export default function LoginPage() {
           )}
 
 
-          <form onSubmit={handleSubmit} method="POST" className="space-y-6">
+          <form onSubmit={handleSubmit} method="POST" noValidate className="space-y-6">
 
             <div>
               <div className="flex justify-between items-baseline mb-2">
@@ -124,7 +137,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Password Field */}
             <div>
               <div className="flex justify-between items-baseline mb-2">
                 <label htmlFor="password" className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
@@ -172,7 +184,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Action buttons */}
             <div className="flex items-center justify-between pt-2">
               <button
                 type="submit"
