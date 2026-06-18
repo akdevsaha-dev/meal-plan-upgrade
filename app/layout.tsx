@@ -5,6 +5,9 @@ import CustomCursor from "./components/CustomCursor";
 export const metadata: Metadata = {
   title: "Chef",
   description: "AI-powered meal planning",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

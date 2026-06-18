@@ -11,7 +11,7 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
 });
 
-export const Hero = () => {
+export const Hero = ({ isRevealed = true }: { isRevealed?: boolean }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const line1 = "Get Meal Plans.";
@@ -29,18 +29,25 @@ export const Hero = () => {
     ));
   };
 
+  // Set initial state on mount
   useGSAP(
     () => {
-      gsap.fromTo(
-        ".char",
-        {
-          opacity: 0,
-          y: 100,
-          rotationX: -95,
-          scale: 0.3,
-          transformOrigin: "center bottom -50",
-        },
-        {
+      gsap.set(".char", {
+        opacity: 0,
+        y: 100,
+        rotationX: -95,
+        scale: 0.3,
+        transformOrigin: "center bottom -50",
+      });
+    },
+    { scope: sectionRef }
+  );
+
+  // Trigger reveal animation when isRevealed is true, and set up hover listeners
+  useGSAP(
+    () => {
+      if (isRevealed) {
+        gsap.to(".char", {
           opacity: 1,
           y: 0,
           rotationX: 0,
@@ -48,8 +55,8 @@ export const Hero = () => {
           stagger: 0.02,
           duration: 1.5,
           ease: "power4.out",
-        }
-      );
+        });
+      }
 
       const section = sectionRef.current;
       if (!section) return;
@@ -128,7 +135,7 @@ export const Hero = () => {
         section.removeEventListener("mouseleave", handleMouseLeave);
       };
     },
-    { scope: sectionRef }
+    { dependencies: [isRevealed], scope: sectionRef }
   );
 
   return (

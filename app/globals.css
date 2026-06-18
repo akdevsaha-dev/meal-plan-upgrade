@@ -115,3 +115,7 @@ html.lenis body {
     cursor: text !important;
   }
 }
+
+.preloader-active .custom-cursor-ball {
+  display: none !important;
+}
