@@ -1,7 +1,6 @@
 "use client";
 
 import ChefLogo from "@/app/components/ChefLogo";
-import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
 import ChatRecipeCard, { Recipe } from "@/app/components/ChatRecipeCard";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -13,6 +12,8 @@ interface Message {
   content: string;
 }
 
+const BACKGROUNDS = ["cui1", "cui2", "cui3", "gallery"];
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -23,11 +24,38 @@ export default function ChatPage() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const [bgImage, setBgImage] = useState<string>("cui1");
+  const [showBgSelector, setShowBgSelector] = useState(false);
+  const selectorRef = useRef<HTMLDivElement>(null);
+
+  // Sync background selection with localStorage
+  useEffect(() => {
+    const savedBg = localStorage.getItem("chat-bg");
+    if (savedBg && [...BACKGROUNDS, "none"].includes(savedBg)) {
+      setBgImage(savedBg);
+    }
+  }, []);
+
+  const handleBgChange = (bg: string) => {
+    setBgImage(bg);
+    localStorage.setItem("chat-bg", bg);
+  };
+
+  // Close selector dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (selectorRef.current && !selectorRef.current.contains(event.target as Node)) {
+        setShowBgSelector(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     if (token) {
-      // Fetch chat messages
       fetch("/api/chat", {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
@@ -52,7 +80,6 @@ export default function ChatPage() {
           setIsInitialLoading(false);
         });
 
-      // Fetch usage data to check limits
       fetch("/api/usage", {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -204,209 +231,293 @@ export default function ChatPage() {
   ];
 
   return (
-    <div className="relative flex h-[calc(100vh-80px)] flex-col font-sans overflow-hidden">
+    <div className="relative flex h-screen flex-col font-sans overflow-hidden bg-[#FAF9F6] text-neutral-800 select-none">
 
-      <div
-        className="absolute inset-0 z-0 bg-linear-to-tr from-amber-50/20 via-stone-50/40 to-orange-50/20 dark:from-neutral-950 dark:via-neutral-900/60 dark:to-neutral-950"
-        aria-hidden="true"
-      />
-      <CookingGifBackdrop position="absolute" stackClass="z-[1]" />
+      <div className="h-20 backdrop-blur-md bg-[#FAF9F6]/85 border-b border-neutral-200/40 px-6 sm:px-12 flex justify-between items-center relative z-20">
 
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+        <div className="flex items-center gap-6">
+          <Link
+            href="/recipes"
+            className="group flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] text-neutral-500 hover:text-black transition-colors uppercase select-none"
+            aria-label="Back to Recipes"
+          >
+            <svg className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>BACK</span>
+          </Link>
 
-        <div className="backdrop-blur-md bg-white/70 dark:bg-neutral-900/75 border-b border-neutral-100 dark:border-neutral-800/60 px-6 py-4 flex justify-between items-center shadow-xs">
+          <div className="h-6 w-[1px] bg-neutral-200" />
+
           <div className="flex items-center gap-3">
             <div className="relative">
-              <ChefLogo size={36} priority />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-neutral-900 rounded-full" />
+              <ChefLogo size={32} priority href={null} />
+              <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 border border-white rounded-full shadow-sm" />
             </div>
             <div>
-              <h1 className="font-extrabold text-neutral-800 dark:text-neutral-100 text-base tracking-tight flex items-center gap-1.5">
+              <h1 className="font-extrabold text-neutral-900 text-xs tracking-[0.25em] leading-none uppercase">
                 Chef Ferraro
               </h1>
-              <p className="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider">
+              <p className="text-[8.5px] text-neutral-400 font-bold uppercase tracking-[0.15em] mt-1.5">
                 Elite AI Culinary Guide
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-100/50 dark:border-orange-900/40">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-              Active Assistant
-            </span>
-          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
-          <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-3 relative z-30" ref={selectorRef}>
+          <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 border border-orange-200/45 bg-orange-50/50 text-orange-600 text-[8.5px] font-bold uppercase tracking-[0.15em] select-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+            Active Assistant
+          </span>
 
-            {isInitialLoading ? (
-              <ChatSkeleton />
-            ) : messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center mt-12 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="p-4 bg-linear-to-tr from-orange-50 to-amber-50 dark:from-neutral-900 dark:to-neutral-950 rounded-full shadow-md border border-orange-100/50 dark:border-neutral-800 mb-6">
-                  <ChefLogo size={64} priority />
-                </div>
-                <h2 className="text-2xl font-black text-neutral-800 dark:text-neutral-100 tracking-tight">
-                  Welcome to Chef Ferraro
-                </h2>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2 max-w-md">
-                  Your premium AI companion. Ask me to formulate, adapt, scale, or explain recipes and custom cooking procedures.
-                </p>
+          <button
+            onClick={() => setShowBgSelector(!showBgSelector)}
+            className="group flex items-center gap-2.5 px-4 py-2.5 bg-white border border-neutral-300 hover:border-black text-neutral-800 transition-all text-[9px] font-bold tracking-[0.2em] uppercase cursor-pointer shadow-3xs"
+            aria-label="Switch background canvas"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>CANVAS</span>
+          </button>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-10 w-full max-w-2xl px-4">
-                  {suggestions.map((text, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSend(text)}
-                      className="bg-white/60 dark:bg-neutral-900/50 hover:bg-orange-50/50 dark:hover:bg-neutral-800/60 hover:border-orange-200 dark:hover:border-orange-900/40 backdrop-blur-xs border border-neutral-200/60 dark:border-neutral-800/80 rounded-xl p-4 text-xs font-semibold text-neutral-600 dark:text-neutral-300 text-left transition-all duration-200 shadow-xs hover:shadow-md cursor-pointer hover:scale-[1.01]"
-                    >
-                      {text}
-                      <span className="block text-orange-500 font-bold mt-2 hover:translate-x-1 transition-transform">
-                        Ask &rarr;
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {messages.map((msg, i) => {
-              const recipeId = getMessageRecipeId(msg.content);
-              const cleanText = cleanMessageContent(msg.content);
-              const associatedRecipe = recipeId ? recipes[recipeId] : null;
-
-              return (
-                <div key={i} className="space-y-4">
-                  {/* Text bubble */}
-                  <div
-                    className={`flex items-start gap-3.5 ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in duration-300`}
-                  >
-                    {/* Assistant Avatar */}
-                    {msg.role === "assistant" && (
-                      <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-neutral-800 border border-orange-200/40 dark:border-neutral-700/40 flex items-center justify-center shrink-0 shadow-xs">
-                        <ChefLogo size={20} priority href={null} />
-                      </div>
-                    )}
-
-                    <div
-                      className={`relative px-4.5 py-3 rounded-2xl text-sm leading-relaxed ${msg.role === "user"
-                        ? "bg-neutral-900 dark:bg-zinc-800 text-white rounded-tr-none shadow-md max-w-[80%]"
-                        : "bg-white/85 dark:bg-neutral-900/85 text-neutral-800 dark:text-neutral-200 rounded-tl-none border border-neutral-100 dark:border-neutral-800/80 shadow-xs max-w-[80%]"
-                        }`}
-                    >
-                      <p className="whitespace-pre-wrap">{cleanText}</p>
-                    </div>
-
-                    {/* User Avatar */}
-                    {msg.role === "user" && (
-                      <div className="w-8 h-8 rounded-full bg-linear-to-tr from-zinc-800 to-neutral-950 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-md">
-                        U
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Render recipe card directly below the assistant message bubble */}
-                  {associatedRecipe && (
-                    <div className="flex justify-start pl-11.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <ChatRecipeCard recipe={associatedRecipe} />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Premium Thinking/Loading state */}
-            {loading && (
-              <div className="flex items-start gap-3.5 justify-start animate-in fade-in duration-200">
-                <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-neutral-800 border border-orange-200/40 dark:border-neutral-700/40 flex items-center justify-center shrink-0 shadow-xs">
-                  <ChefLogo size={20} priority href={null} />
-                </div>
-                <div className="bg-white/85 dark:bg-neutral-900/85 rounded-2xl rounded-tl-none border border-neutral-100 dark:border-neutral-800/80 px-5 py-4 flex items-center gap-1 shadow-xs">
-                  <span className="w-1.5 h-1.5 bg-neutral-400 dark:bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-1.5 h-1.5 bg-neutral-400 dark:bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-1.5 h-1.5 bg-neutral-400 dark:bg-neutral-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-        </div>
-
-        {/* Floating Input and Rate Limit Warnings */}
-        <div className="backdrop-blur-md bg-linear-to-t from-white/95 via-white/80 to-transparent dark:from-neutral-950/95 dark:via-neutral-950/80 dark:to-transparent px-6 py-6 border-t border-neutral-100 dark:border-neutral-900/60">
-          <div className="max-w-4xl mx-auto space-y-4">
-
-            {/* Custom Banner Rate Limit */}
-            {rateLimitError && (
-              <div className="bg-red-50/90 dark:bg-red-950/20 border border-red-200/60 dark:border-red-900/50 rounded-2xl p-4.5 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm animate-in slide-in-from-bottom-2 duration-300">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-xl">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-bold text-neutral-800 dark:text-neutral-200">
-                      Rate Limit Reached
-                    </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                      {rateLimitError}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2 w-full sm:w-auto shrink-0">
+          {showBgSelector && (
+            <div className="absolute right-0 top-12 w-56 bg-white border border-neutral-300 rounded-none p-3 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+              <p className="text-[9px] font-black text-neutral-400 uppercase tracking-widest px-3 py-2 select-none border-b border-neutral-100 pb-2.5 mb-2.5">
+                Choose Backdrop
+              </p>
+              <div className="space-y-1">
+                {BACKGROUNDS.map((bg) => (
                   <button
-                    onClick={() => setRateLimitError(null)}
-                    className="flex-1 sm:flex-initial px-4 py-2 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+                    key={bg}
+                    onClick={() => {
+                      handleBgChange(bg);
+                      setShowBgSelector(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-none text-[9px] font-bold uppercase tracking-[0.15em] text-left transition-all cursor-pointer ${bgImage === bg
+                      ? "bg-neutral-900 text-white shadow-sm"
+                      : "text-neutral-600 hover:text-black hover:bg-neutral-50"
+                      }`}
                   >
-                    Dismiss
+                    <span
+                      className="w-5 h-5 rounded-none border border-neutral-200 bg-cover bg-center shrink-0"
+                      style={{ backgroundImage: `url('/images/${bg}.png')` }}
+                    />
+                    <span className="truncate">{bg === "gallery" ? "Art Gallery" : `Backdrop ${bg.replace("cui", "")}`}</span>
                   </button>
-                  <Link
-                    href="/settings"
-                    className="flex-1 sm:flex-initial text-center bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md shadow-orange-500/10 transition-all cursor-pointer flex items-center justify-center"
-                  >
-                    Upgrade to Pro
-                  </Link>
-                </div>
+                ))}
+                <button
+                  onClick={() => {
+                    handleBgChange("none");
+                    setShowBgSelector(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-none text-[9px] font-bold uppercase tracking-[0.15em] text-left transition-all cursor-pointer ${bgImage === "none"
+                    ? "bg-neutral-900 text-white shadow-sm"
+                    : "text-neutral-600 hover:text-black hover:bg-neutral-50"
+                    }`}
+                >
+                  <span className="w-5 h-5 rounded-none border border-neutral-200 bg-[#FAF9F6] shrink-0" />
+                  <span className="truncate">Solid Canvas (default)</span>
+                </button>
               </div>
-            )}
-
-            {/* Input Floating Panel */}
-            <div className={`relative flex items-center bg-white dark:bg-neutral-900/90 border rounded-2xl shadow-xl transition-all duration-300 p-2 ${rateLimitError
-              ? "border-red-300/60 dark:border-red-900/40 opacity-75 pointer-events-none"
-              : "border-neutral-200/80 dark:border-neutral-800/80 focus-within:ring-3 focus-within:ring-orange-500/15 focus-within:border-orange-500"
-              }`}>
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder={rateLimitError ? "Limit reached. Upgrade to continue." : "Ask Chef Ferraro anything..."}
-                disabled={loading || rateLimitError !== null}
-                className="flex-1 border-0 focus:ring-0 text-sm py-2 px-4 bg-transparent placeholder-neutral-400 dark:placeholder-neutral-500 outline-none text-neutral-800 dark:text-neutral-100"
-              />
-              <button
-                onClick={() => handleSend()}
-                disabled={loading || !input.trim() || rateLimitError !== null}
-                className="bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white p-3 rounded-xl transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center shrink-0"
-                aria-label="Send message"
-              >
-                <svg className="w-4 h-4 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-              </button>
             </div>
-
-            <p className="text-[10px] text-center text-neutral-400 dark:text-neutral-500">
-              Chef Ferraro can make mistakes. Always check key recipes and dietary suggestions.
-            </p>
-
-          </div>
+          )}
         </div>
-
       </div>
+
+      <div className="flex-1 flex flex-col min-h-0 relative z-10">
+
+        <div className="relative flex-1 max-w-5xl w-full mx-auto flex flex-col overflow-hidden bg-white border-x border-neutral-200/60 shadow-2xs">
+
+          {BACKGROUNDS.map((bg) => (
+            <div
+              key={bg}
+              className="absolute inset-0 z-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out pointer-events-none"
+              style={{
+                backgroundImage: `url('/images/${bg}.png')`,
+                opacity: bgImage === bg ? 0.45 : 0,
+              }}
+            />
+          ))}
+
+          {/* Clean watermark overlay */}
+          <div
+            className="absolute inset-0 z-0 bg-white/10 backdrop-blur-[0.5px] pointer-events-none transition-opacity duration-1000 ease-in-out"
+            style={{ opacity: bgImage === "none" ? 0 : 1 }}
+          />
+
+          {/* Scrollable Message History Area */}
+          <div className="relative z-10 flex-1 overflow-y-auto px-6 py-8 space-y-6 min-h-0">
+            <div className="max-w-4xl mx-auto space-y-6">
+
+              {isInitialLoading ? (
+                <ChatSkeleton />
+              ) : messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center text-center mt-12 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="p-4 bg-orange-50/50 border border-orange-100/50 rounded-full shadow-xs mb-6">
+                    <ChefLogo size={64} priority href={null} />
+                  </div>
+                  <h2 className="text-2xl font-black text-neutral-800 tracking-tight uppercase">
+                    Welcome to Chef Ferraro
+                  </h2>
+                  <p className="text-xs text-neutral-500 mt-3 max-w-md font-medium leading-relaxed tracking-wide">
+                    Your premium AI companion. Ask me to formulate, adapt, scale, or explain recipes and custom cooking procedures.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12 w-full max-w-2xl px-4">
+                    {suggestions.map((text, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSend(text)}
+                        className="bg-white/80 hover:bg-orange-50/50 border border-neutral-200/60 rounded-2xl p-4 text-xs font-bold text-neutral-750 text-left transition-all duration-300 shadow-xs hover:shadow-md cursor-pointer hover:scale-[1.01]"
+                      >
+                        {text}
+                        <span className="block text-orange-600 font-extrabold mt-3 hover:translate-x-1 transition-transform">
+                          Ask &rarr;
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {messages.map((msg, i) => {
+                const recipeId = getMessageRecipeId(msg.content);
+                const cleanText = cleanMessageContent(msg.content);
+                const associatedRecipe = recipeId ? recipes[recipeId] : null;
+
+                return (
+                  <div key={i} className="space-y-4">
+                    {/* Text bubble */}
+                    <div
+                      className={`flex items-start gap-3.5 ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in duration-300`}
+                    >
+                      {/* Assistant Avatar */}
+                      {msg.role === "assistant" && (
+                        <div className="w-8 h-8 rounded-full bg-neutral-50 border border-neutral-200 flex items-center justify-center shrink-0 shadow-xs">
+                          <ChefLogo size={20} priority href={null} />
+                        </div>
+                      )}
+
+                      <div
+                        className={`relative px-5 py-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-xs ${msg.role === "user"
+                          ? "bg-neutral-900 text-white rounded-tr-none max-w-[80%]"
+                          : "bg-white/95 border border-neutral-200/60 text-neutral-800 rounded-tl-none max-w-[85%]"
+                          }`}
+                      >
+                        <p className="whitespace-pre-wrap">{cleanText}</p>
+                      </div>
+
+                      {/* User Avatar */}
+                      {msg.role === "user" && (
+                        <div className="w-8 h-8 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                          U
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Render recipe card directly below the assistant message bubble */}
+                    {associatedRecipe && (
+                      <div className="flex justify-start pl-11.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                        <ChatRecipeCard recipe={associatedRecipe} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Premium Thinking/Loading state */}
+              {loading && (
+                <div className="flex items-start gap-3.5 justify-start animate-in fade-in duration-200">
+                  <div className="w-8 h-8 rounded-full bg-neutral-50 border border-neutral-200 flex items-center justify-center shrink-0 shadow-xs">
+                    <ChefLogo size={20} priority href={null} />
+                  </div>
+                  <div className="bg-white/95 border border-neutral-200/60 rounded-2xl rounded-tl-none px-5 py-4 flex items-center gap-1 shadow-xs">
+                    <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          {/* Floating Input and Rate Limit Warnings */}
+          <div className="relative z-10 backdrop-blur-md bg-white/95 border-t border-neutral-200/60 px-6 py-5">
+            <div className="max-w-4xl mx-auto space-y-3.5">
+
+              {/* Custom Banner Rate Limit */}
+              {rateLimitError && (
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm animate-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-100 text-red-600 rounded-xl">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-bold text-neutral-900">
+                        Rate Limit Reached
+                      </p>
+                      <p className="text-xs text-neutral-500 mt-0.5">
+                        {rateLimitError}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto shrink-0">
+                    <button
+                      onClick={() => setRateLimitError(null)}
+                      className="flex-1 sm:flex-initial px-4 py-2 border border-neutral-200 text-neutral-600 hover:bg-neutral-50 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+                    >
+                      Dismiss
+                    </button>
+                    <Link
+                      href="/settings"
+                      className="flex-1 sm:flex-initial text-center bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-md shadow-orange-500/10 transition-all cursor-pointer flex items-center justify-center"
+                    >
+                      Upgrade to Pro
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* Input Floating Panel */}
+              <div className={`relative flex items-center bg-white border transition-all duration-300 p-1 ${rateLimitError
+                ? "border-red-200 opacity-75 pointer-events-none rounded-none"
+                : "border-neutral-300 focus-within:border-neutral-900 rounded-none"
+                }`}>
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                  placeholder={rateLimitError ? "LIMIT REACHED. UPGRADE TO CONTINUE." : "ASK CHEF FERRARO ANYTHING..."}
+                  disabled={loading || rateLimitError !== null}
+                  className="flex-1 border-none focus:ring-0 text-xs py-3.5 px-4 bg-transparent placeholder-neutral-300 outline-none text-neutral-850 font-medium tracking-widest uppercase"
+                />
+                <button
+                  onClick={() => handleSend()}
+                  disabled={loading || !input.trim() || rateLimitError !== null}
+                  className="bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3.5 rounded-none transition-all duration-200 active:scale-98 disabled:opacity-30 disabled:pointer-events-none cursor-pointer flex items-center justify-center shrink-0 border border-neutral-900 text-[10px] font-bold tracking-[0.2em] uppercase"
+                  aria-label="Send message"
+                >
+                  SEND
+                </button>
+              </div>
+
+              <p className="text-[10px] text-center text-neutral-400 font-semibold select-none tracking-wide uppercase">
+                Chef Ferraro can make mistakes. Always check key recipes and dietary suggestions.
+              </p>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   );
 }

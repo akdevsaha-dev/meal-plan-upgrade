@@ -2,7 +2,7 @@
 
 import AppNavbar from "@/app/components/AppNavbar";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Montserrat } from "next/font/google";
 import ChefLogo from "@/app/components/ChefLogo";
 
@@ -14,6 +14,7 @@ const montserrat = Montserrat({
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [authorized, setAuthorized] = useState(false);
   const [showLoader, setShowLoader] = useState(false);
 
@@ -55,10 +56,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const isChatPage = pathname === "/chat";
+
   return (
     <div className="flex min-h-screen flex-col bg-[#FAF9F6]">
-      <AppNavbar />
-      <main className="min-h-0 flex-1 pt-20">{children}</main>
+      {!isChatPage && <AppNavbar />}
+      <main className={`min-h-0 flex-1 ${isChatPage ? "" : "pt-20"}`}>{children}</main>
     </div>
   );
 }
