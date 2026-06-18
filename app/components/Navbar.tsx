@@ -1,182 +1,172 @@
 "use client";
 
-import ChefLogo from "@/app/components/ChefLogo";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Montserrat } from "next/font/google";
+import gsap from "gsap";
 
-export default function Navbar() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [loggingOut, setLoggingOut] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<{ name: string; email: string; plan: string; hasProAccess?: boolean } | null>(null);
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  variable: "--font-montserrat",
+});
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
+export const Navbar = () => {
+  const [isMounted, setIsMounted] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const linksRef = useRef<HTMLDivElement>(null);
+
+  const handleToggle = () => {
+    if (isMounted) {
+      if (containerRef.current) {
+        gsap.to(containerRef.current, {
+          scaleY: 0,
+          opacity: 0,
+          duration: 0.4,
+          ease: "power3.in",
+          transformOrigin: "top center",
+          onComplete: () => {
+            setIsMounted(false);
+          },
+        });
+      } else {
+        setIsMounted(false);
+      }
+    } else {
+      setIsMounted(true);
+    }
+  };
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error("Failed to parse user from localStorage", e);
+    if (isMounted && containerRef.current) {
+      gsap.fromTo(
+        containerRef.current,
+        {
+          scaleY: 0,
+          opacity: 0,
+          transformOrigin: "top center",
+        },
+        {
+          scaleY: 1,
+          opacity: 1,
+          duration: 0.5,
+          ease: "power3.out",
+        },
+      );
+
+      if (linksRef.current) {
+        gsap.fromTo(
+          linksRef.current.children,
+          {
+            y: -15,
+            opacity: 0,
+          },
+          {
+            y: 0,
+            opacity: 1,
+            stagger: 0.05,
+            duration: 0.4,
+            ease: "power2.out",
+            delay: 0.1,
+          },
+        );
       }
     }
-
-    const token = localStorage.getItem("token");
-    fetch("/api/auth/me", {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then((r) => {
-        if (!r.ok) throw new Error("Fetch failed");
-        return r.json();
-      })
-      .then((data) => {
-        if (data.user) {
-          const profile = {
-            name: data.user.name,
-            email: data.user.email,
-            plan: data.user.plan,
-            hasProAccess: data.user.hasProAccess,
-          };
-          setUser(profile);
-          localStorage.setItem("user", JSON.stringify(profile));
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to refresh user info:", err);
-      });
-  }, []);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  async function handleLogout() {
-    setLoggingOut(true);
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      router.push("/login");
-    }
-  }
-
-  const userInitials = user?.name
-    ? user.name
-      .split(/\s+/)
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase()
-    : "U";
-
-  const navItems = [
-    { name: "Recipes", href: "/recipes" },
-    { name: "Chef Ferraro", href: "/chat" },
-    { name: "Meal Plans", href: "/meal-plans" },
-  ];
+  }, [isMounted]);
 
   return (
-    <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-gray-100 shadow-xs px-8 py-3.5 flex items-center justify-between font-sans">
-      <div className="flex items-center gap-3">
-        <ChefLogo size={34} />
-        <Link
-          href="/recipes"
-          className="bg-linear-to-r from-orange-600 to-red-600 bg-clip-text text-transparent font-black text-2xl tracking-tight hover:opacity-90 transition-opacity"
-        >
-          Chef
-        </Link>
-      </div>
-
-      <div className="flex items-center gap-8">
-        <div className="flex items-center gap-6">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`text-sm font-semibold transition-all relative py-1.5 duration-200 hover:text-orange-600 ${isActive ? "text-orange-600" : "text-gray-500"
-                  }`}
-              >
-                {item.name}
-                {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 rounded-full" />
-                )}
-              </Link>
-            );
-          })}
-
-          <Link
-            href="/settings"
-            className={`text-sm font-semibold transition-all relative py-1.5 duration-200 hover:text-orange-600 ${pathname === "/settings" ? "text-orange-600" : "text-amber-600"
-              }`}
-          >
-            Settings
-            {pathname === "/settings" && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600 rounded-full" />
-            )}
-          </Link>
-        </div>
-
-        <div className="relative" ref={dropdownRef}>
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-linear-to-tr from-amber-500 to-orange-600 text-white font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer focus:outline-none"
-            aria-label="User menu"
-          >
-            {userInitials}
+    <>
+      <nav
+        className={`${montserrat.variable} fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 sm:px-12 md:px-16 lg:px-24 h-24 bg-linear-to-b from-black/60 to-transparent text-white`}
+      >
+        <div className="flex-1 flex justify-start">
+          <button className="border border-white/30 hover:bg-white/10 hover:border-white px-5 py-2 text-[10px] sm:text-xs tracking-[0.2em] font-light uppercase transition duration-300 bg-transparent cursor-pointer">
+            TRY NOW
           </button>
-
-          {isMenuOpen && (
-            <div className="absolute right-0 mt-3.5 w-64 bg-white rounded-2xl shadow-xl border border-gray-100/80 py-3 text-left animate-in fade-in slide-in-from-top-2 duration-150 ease-out">
-              <div className="px-4.5 py-2.5 border-b border-gray-50 pb-3">
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Current Account</p>
-                <p className="font-bold text-gray-800 text-sm mt-1.5 truncate">{user?.name || "Premium Chef"}</p>
-                <p className="text-xs text-gray-500 truncate mt-0.5">{user?.email || "loading account..."}</p>
-              </div>
-
-              <div className="px-4.5 py-3">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${user?.hasProAccess
-                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                  : "bg-gray-50 text-gray-600 border-gray-200"
-                  }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${user?.hasProAccess
-                    ? "bg-amber-500 animate-pulse"
-                    : "bg-gray-400"
-                    }`} />
-                  {user?.hasProAccess ? "Pro" : "Free"} Plan
-                </span>
-              </div>
-
-              <div className="border-t border-gray-100 my-1"></div>
-
-              <button
-                onClick={handleLogout}
-                disabled={loggingOut}
-                className="w-full flex items-center gap-2.5 px-4.5 py-2.5 text-sm text-red-600 hover:bg-red-50/50 font-bold transition-colors disabled:opacity-50 text-left cursor-pointer"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-                </svg>
-                {loggingOut ? "Logging out…" : "Log out"}
-              </button>
-            </div>
-          )}
         </div>
-      </div>
-    </nav>
-  );
-}
 
+        <div className="flex-none text-center">
+          <span className="text-lg sm:text-xl md:text-2xl font-light tracking-[0.35em] sm:tracking-[0.5em] uppercase font-(family-name:--font-montserrat)">
+            CATER
+          </span>
+        </div>
+
+        <div className="flex-1 flex justify-end">
+          <button
+            onClick={handleToggle}
+            className="relative flex flex-col justify-center items-end group cursor-pointer w-8 h-8 bg-transparent border-none focus:outline-none z-50"
+            aria-label="Toggle Menu"
+          >
+            <span
+              className={`h-px bg-white transition-all duration-300 ${isMounted ? "w-8 rotate-45 translate-y-0.5" : "w-5 group-hover:w-8"}`}
+            ></span>
+            <span
+              className={`h-px bg-white transition-all duration-300 mt-1.5 ${isMounted ? "w-8 -rotate-45 -translate-y-1.25" : "w-8"}`}
+            ></span>
+          </button>
+        </div>
+      </nav>
+
+      {isMounted && (
+        <div
+          ref={containerRef}
+          className={`${montserrat.variable} fixed top-24 left-1/2 -translate-x-1/2 w-[calc(100%-20px)] lg:w-162.5 bg-white text-black shadow-2xl rounded-sm z-50 overflow-hidden font-sans border border-neutral-200`}
+        >
+          <div ref={linksRef} className="flex flex-col items-center">
+            <div className="flex flex-col items-center pt-8 pb-4 gap-4 text-xs sm:text-sm tracking-[0.25em] font-light uppercase text-neutral-800 w-full">
+              <a
+                href="#home"
+                onClick={handleToggle}
+                className="hover:text-black transition py-1"
+              >
+                HOME
+              </a>
+              <a
+                href="#menu"
+                onClick={handleToggle}
+                className="hover:text-black transition py-1"
+              >
+                MENU
+              </a>
+              <a
+                href="#gallery"
+                onClick={handleToggle}
+                className="hover:text-black transition py-1"
+              >
+                GALLERY
+              </a>
+              <a
+                href="#about"
+                onClick={handleToggle}
+                className="hover:text-black transition py-1"
+              >
+                ABOUT
+              </a>
+              <a
+                href="#instagram"
+                onClick={handleToggle}
+                className="hover:text-black transition py-1 flex items-center gap-1"
+              >
+                INSTAGRAM <span className="text-[10px]">↗</span>
+              </a>
+            </div>
+
+            <div className="px-4 pb-4 w-full">
+              <div className="relative w-full aspect-[2/1] overflow-hidden rounded-sm">
+                <img
+                  src="/images/navbar-drop.jpg"
+                  alt="Chef dish banner"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/25 flex items-center justify-between px-6 text-white text-[8px] sm:text-[10px] tracking-[0.25em] font-light uppercase">
+                  <span>A REFLECTION BETWEEN</span>
+                  <span className="font-normal mx-2 text-xs sm:text-sm">𓎩</span>
+                  <span>FOOD AND HEALTH</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
