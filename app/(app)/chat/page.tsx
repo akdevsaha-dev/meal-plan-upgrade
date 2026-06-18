@@ -174,7 +174,7 @@ export default function ChatPage() {
   ];
 
   return (
-    <div className="relative flex h-[calc(100vh-64px)] flex-col font-sans overflow-hidden">
+    <div className="relative flex h-[calc(100vh-80px)] flex-col font-sans overflow-hidden">
 
       <div
         className="absolute inset-0 z-0 bg-linear-to-tr from-amber-50/20 via-stone-50/40 to-orange-50/20 dark:from-neutral-950 dark:via-neutral-900/60 dark:to-neutral-950"

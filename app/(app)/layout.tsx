@@ -1,6 +1,6 @@
 "use client";
 
-import { Navbar } from "@/app/components/Navbar";
+import AppNavbar from "@/app/components/AppNavbar";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -30,8 +30,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Navbar />
-      <main className="min-h-0 flex-1">{children}</main>
+      <AppNavbar />
+      <main className="min-h-0 flex-1 pt-20">{children}</main>
     </div>
   );
 }
