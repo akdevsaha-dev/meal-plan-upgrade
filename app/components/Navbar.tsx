@@ -14,6 +14,7 @@ export const Navbar = () => {
   const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const linksRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleToggle = () => {
     if (isMounted) {
@@ -73,6 +74,51 @@ export const Navbar = () => {
     }
   }, [isMounted]);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        isMounted &&
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node) &&
+        toggleButtonRef.current &&
+        !toggleButtonRef.current.contains(event.target as Node)
+      ) {
+        gsap.to(containerRef.current, {
+          scaleY: 0,
+          opacity: 0,
+          duration: 0.4,
+          ease: "power3.in",
+          transformOrigin: "top center",
+          onComplete: () => {
+            setIsMounted(false);
+          },
+        });
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && isMounted && containerRef.current) {
+        gsap.to(containerRef.current, {
+          scaleY: 0,
+          opacity: 0,
+          duration: 0.4,
+          ease: "power3.in",
+          transformOrigin: "top center",
+          onComplete: () => {
+            setIsMounted(false);
+          },
+        });
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMounted]);
+
   return (
     <>
       <nav
@@ -92,6 +138,7 @@ export const Navbar = () => {
 
         <div className="flex-1 flex justify-end">
           <button
+            ref={toggleButtonRef}
             onClick={handleToggle}
             className="relative flex flex-col justify-center items-end group cursor-pointer w-8 h-8 bg-transparent border-none focus:outline-none z-50"
             aria-label="Toggle Menu"
@@ -116,35 +163,35 @@ export const Navbar = () => {
               <a
                 href="#home"
                 onClick={handleToggle}
-                className="hover:text-black transition py-1"
+                className="hover:text-black transition py-1 relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-black after:transition-transform after:duration-300 hover:after:scale-x-100"
               >
                 HOME
               </a>
               <a
                 href="#menu"
                 onClick={handleToggle}
-                className="hover:text-black transition py-1"
+                className="hover:text-black transition py-1 relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-black after:transition-transform after:duration-300 hover:after:scale-x-100"
               >
                 MENU
               </a>
               <a
                 href="#gallery"
                 onClick={handleToggle}
-                className="hover:text-black transition py-1"
+                className="hover:text-black transition py-1 relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-black after:transition-transform after:duration-300 hover:after:scale-x-100"
               >
                 GALLERY
               </a>
               <a
                 href="#about"
                 onClick={handleToggle}
-                className="hover:text-black transition py-1"
+                className="hover:text-black transition py-1 relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-black after:transition-transform after:duration-300 hover:after:scale-x-100"
               >
                 ABOUT
               </a>
               <a
                 href="#instagram"
                 onClick={handleToggle}
-                className="hover:text-black transition py-1 flex items-center gap-1"
+                className="hover:text-black transition py-1 flex items-center gap-1 relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-black after:transition-transform after:duration-300 hover:after:scale-x-100"
               >
                 INSTAGRAM <span className="text-[10px]">↗</span>
               </a>
