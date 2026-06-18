@@ -1,9 +1,16 @@
 "use client";
 
-import ChefLogo from "@/app/components/ChefLogo";
-import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Montserrat } from "next/font/google";
+import CaterLogo from "@/app/components/CaterLogo";
+import InteractiveVideoCard from "@/app/components/InteractiveVideoCard";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-montserrat",
+});
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -59,43 +66,29 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8 font-sans overflow-hidden">
-      <div
-        className="absolute inset-0 z-0 bg-gradient-to-tr from-amber-50/30 via-stone-50/50 to-orange-50/40 dark:from-neutral-950 dark:via-neutral-900/60 dark:to-neutral-950"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-orange-200/20 dark:bg-orange-900/5 blur-3xl pointer-events-none"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] rounded-full bg-amber-200/20 dark:bg-amber-900/5 blur-3xl pointer-events-none"
-        aria-hidden="true"
-      />
+    <main
+      className={`${montserrat.variable} font-sans flex flex-col lg:flex-row w-full min-h-screen lg:h-screen bg-[#FAF9F6] text-[#111111] p-4 sm:p-6 lg:p-8 gap-6 lg:gap-8 overflow-y-auto lg:overflow-hidden`}
+    >
+      {/* Left side: Registration form */}
+      <div className="w-full lg:w-[45%] flex flex-col justify-between min-h-[620px] lg:h-full py-6 px-4 sm:px-8">
+        
+        {/* Brand Header */}
+        <div className="flex items-center gap-2">
+          <CaterLogo size={24} />
+          <span className="text-xs font-light tracking-[0.4em] uppercase text-neutral-900 select-none">
+            CATER
+          </span>
+        </div>
 
-      <CookingGifBackdrop stackClass="z-[1]" />
-
-      <div className="relative z-10 w-full max-w-md">
-        <div className="backdrop-blur-xl bg-white/70 dark:bg-neutral-900/75 border border-white/40 dark:border-neutral-800/60 shadow-2xl rounded-2xl p-8 sm:p-10 transition-all duration-300">
-
-          <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center gap-3 mb-2 justify-center">
-              <ChefLogo size={42} priority />
-              <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent font-black text-3xl tracking-tight">
-                Chef
-              </span>
-            </div>
-            <h1 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 tracking-tight text-center">
-              Create Account
-            </h1>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1 text-center">
-              Get started with your culinary assistant
-            </p>
-          </div>
+        {/* Center registration form */}
+        <div className="w-full max-w-sm my-auto py-4">
+          <h1 className="text-3xl sm:text-4xl font-light tracking-[0.1em] uppercase text-neutral-900 mb-6 select-none">
+            Create Account
+          </h1>
 
           {error && (
-            <div className="bg-red-50 dark:bg-red-950/30 border border-red-200/50 dark:border-red-900/30 text-red-600 dark:text-red-400 p-3.5 rounded-xl mb-6 text-sm font-medium flex items-start gap-2.5 animate-in fade-in duration-200">
-              <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="bg-red-50 border border-red-200/60 text-red-600 p-3.5 rounded-xl mb-5 text-xs font-medium flex items-start gap-2.5 animate-in fade-in duration-200">
+              <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <span>{error}</span>
@@ -103,58 +96,93 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Name Field */}
             <div>
-              <label htmlFor="name" className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">
-                Full Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                autoComplete="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={`w-full px-4 py-2.5 rounded-xl border bg-white/50 dark:bg-neutral-950/40 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 text-sm ${fieldErrors.name ? "border-red-400 dark:border-red-900/50" : "border-neutral-200/80 dark:border-neutral-800/80"
+              <div className="flex justify-between items-baseline mb-1.5">
+                <label htmlFor="name" className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
+                  Full Name
+                </label>
+                {fieldErrors.name?.[0] && (
+                  <span className="text-[10px] font-medium text-red-500 tracking-wider">
+                    {fieldErrors.name[0]}
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  required
+                  autoComplete="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={`w-full px-4 py-2.5 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${
+                    fieldErrors.name ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
                   }`}
-                placeholder="Chef Guest"
-              />
-              {fieldErrors.name?.map((msg) => (
-                <p key={msg} className="text-red-500 dark:text-red-400 text-xs mt-1.5 flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-red-500 shrink-0" />
-                  {msg}
-                </p>
-              ))}
+                  placeholder="Enter your name"
+                  disabled={isSubmitting}
+                />
+                {fieldErrors.name && (
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-red-500 pointer-events-none">
+                    <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
             </div>
 
+            {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">
-                Email Address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`w-full px-4 py-2.5 rounded-xl border bg-white/50 dark:bg-neutral-950/40 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 text-sm ${fieldErrors.email ? "border-red-400 dark:border-red-900/50" : "border-neutral-200/80 dark:border-neutral-800/80"
+              <div className="flex justify-between items-baseline mb-1.5">
+                <label htmlFor="email" className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
+                  Email address
+                </label>
+                {fieldErrors.email?.[0] && (
+                  <span className="text-[10px] font-medium text-red-500 tracking-wider">
+                    {fieldErrors.email[0]}
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`w-full px-4 py-2.5 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${
+                    fieldErrors.email ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
                   }`}
-                placeholder="you@example.com"
-              />
-              {fieldErrors.email?.map((msg) => (
-                <p key={msg} className="text-red-500 dark:text-red-400 text-xs mt-1.5 flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-red-500 shrink-0" />
-                  {msg}
-                </p>
-              ))}
+                  placeholder="Enter your email"
+                  disabled={isSubmitting}
+                />
+                {fieldErrors.email && (
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-red-500 pointer-events-none">
+                    <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
             </div>
 
+            {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">
-                Password
-              </label>
+              <div className="flex justify-between items-baseline mb-1.5">
+                <label htmlFor="password" className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
+                  Password
+                </label>
+                {fieldErrors.password?.[0] && (
+                  <span className="text-[10px] font-medium text-red-500 tracking-wider">
+                    {fieldErrors.password[0]}
+                  </span>
+                )}
+              </div>
               <div className="relative">
                 <input
                   id="password"
@@ -164,15 +192,18 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full pl-4 pr-11 py-2.5 rounded-xl border bg-white/50 dark:bg-neutral-950/40 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 text-sm ${fieldErrors.password ? "border-red-400 dark:border-red-900/50" : "border-neutral-200/80 dark:border-neutral-800/80"
-                    }`}
-                  placeholder="••••••••"
+                  className={`w-full pl-4 pr-11 py-2.5 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${
+                    fieldErrors.password ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
+                  }`}
+                  placeholder="Enter your password"
+                  disabled={isSubmitting}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors p-1 cursor-pointer focus:outline-hidden"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors p-1 cursor-pointer focus:outline-none"
                   aria-label={showPassword ? "Hide password" : "Show password"}
+                  disabled={isSubmitting}
                 >
                   {showPassword ? (
                     <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -186,18 +217,15 @@ export default function RegisterPage() {
                   )}
                 </button>
               </div>
-              {fieldErrors.password?.map((msg) => (
-                <p key={msg} className="text-red-500 dark:text-red-400 text-xs mt-1.5 flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-red-500 shrink-0" />
-                  {msg}
-                </p>
-              ))}
             </div>
 
+            {/* Confirm Password Field */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1.5">
-                Confirm Password
-              </label>
+              <div className="flex justify-between items-baseline mb-1.5">
+                <label htmlFor="confirmPassword" className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
+                  Confirm Password
+                </label>
+              </div>
               <div className="relative">
                 <input
                   id="confirmPassword"
@@ -207,14 +235,16 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-4 pr-11 py-2.5 rounded-xl border border-neutral-200/80 dark:border-neutral-800/80 bg-white/50 dark:bg-neutral-950/40 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-hidden focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all duration-200 text-sm"
-                  placeholder="••••••••"
+                  className="w-full pl-4 pr-11 py-2.5 bg-white border border-neutral-200/80 rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200"
+                  placeholder="Re-enter your password"
+                  disabled={isSubmitting}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors p-1 cursor-pointer focus:outline-hidden"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors p-1 cursor-pointer focus:outline-none"
                   aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  disabled={isSubmitting}
                 >
                   {showConfirmPassword ? (
                     <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -230,33 +260,41 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-orange-500/10 active:scale-[0.99] disabled:opacity-50 transition-all duration-200 cursor-pointer flex items-center justify-center text-sm mt-2"
-            >
-              {isSubmitting ? (
-                <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              ) : (
-                "SIGN UP"
-              )}
-            </button>
+            {/* Submit Button */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-black hover:bg-neutral-800 text-white font-medium text-xs tracking-widest uppercase py-3 px-4 rounded-full shadow-md active:scale-98 disabled:opacity-50 transition-all duration-200 cursor-pointer flex items-center justify-center"
+              >
+                {isSubmitting ? (
+                  <svg className="animate-spin h-4.5 w-4.5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                ) : (
+                  "Sign up"
+                )}
+              </button>
+            </div>
+
           </form>
-
-          <div className="mt-6 pt-6 border-t border-neutral-100 dark:border-neutral-800/80 text-center">
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              Already have an account?{" "}
-              <a href="/login" className="text-orange-500 hover:text-orange-600 font-semibold transition-colors">
-                Log in
-              </a>
-            </p>
-          </div>
-
         </div>
+
+        {/* Brand Footer */}
+        <div className="text-xs font-semibold text-neutral-400 select-none">
+          Already have an account?{" "}
+          <a href="/login" className="text-neutral-900 hover:underline transition-all">
+            Log in
+          </a>
+        </div>
+
       </div>
-    </div>
+
+      {/* Right side: Interactive video container */}
+      <div className="hidden lg:block lg:w-[55%] h-full relative">
+        <InteractiveVideoCard />
+      </div>
+    </main>
   );
 }
