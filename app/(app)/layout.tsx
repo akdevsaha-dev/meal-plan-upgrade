@@ -17,6 +17,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [router]);
 
+
   if (!authorized) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
@@ -29,7 +30,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-[#FAF9F6]">
       <AppNavbar />
       <main className="min-h-0 flex-1 pt-20">{children}</main>
     </div>

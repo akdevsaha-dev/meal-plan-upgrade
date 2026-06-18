@@ -1,9 +1,14 @@
 "use client";
 
-import ChefLogo from "@/app/components/ChefLogo";
-import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Montserrat } from "next/font/google";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-montserrat",
+});
 
 interface Recipe {
   id: string;
@@ -71,88 +76,82 @@ export default function RecipesPage() {
   });
 
   return (
-    <div className="relative min-h-screen font-sans">
-      <div className="absolute inset-0 z-0 bg-gray-50" aria-hidden />
-      <CookingGifBackdrop position="absolute" stackClass="z-[1]" />
-      <div className="relative z-10 p-6 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-            <ChefLogo size={36} />
-            Recipes
-          </h1>
+    <div className={`${montserrat.variable} font-sans min-h-screen bg-[#FAF9F6] text-[#111111]`}>
+      <div className="mx-auto max-w-7xl px-6 sm:px-12 md:px-16 lg:px-24 pt-4 lg:pt-6 pb-12 lg:pb-16">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-neutral-900/10 pb-4 mb-5 gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-[0.25em] uppercase text-neutral-900">
+              RECIPES
+            </h1>
+            <p className="text-[10px] font-bold text-neutral-400 tracking-[0.2em] uppercase mt-2">
+              Curated Culinary Archives
+            </p>
+          </div>
           <button
             onClick={handleSaveRecipe}
-            className="bg-lime-400 text-black px-6 py-2 text-sm font-bold border-2 border-lime-600 cursor-pointer hover:bg-lime-500 transition-colors"
+            className="rounded-none bg-neutral-900 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 cursor-pointer self-start sm:self-center border border-neutral-900"
           >
-            + Save Recipe
+            + SAVE RECIPE
           </button>
         </div>
 
-        <div className="mb-8 max-w-xl">
-          <div className="relative flex items-center group">
-            <div className="absolute left-4 text-gray-400 group-focus-within:text-orange-500 transition-colors pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.603 10.603z" />
-              </svg>
-            </div>
-
+        <div className="mb-6 max-w-xs">
+          <div className="relative flex items-center border-b border-neutral-400/80 bg-transparent py-1">
             <input
               type="text"
-              placeholder="Search by title, ingredients, cuisine or tags..."
+              placeholder="SEARCH RECIPES..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-10 py-3.5 bg-white border border-gray-200 rounded-2xl shadow-xs text-sm font-medium placeholder-gray-400 text-gray-800 transition-all duration-200 focus:outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 hover:border-gray-300"
+              className="w-full py-1.5 bg-transparent text-xs font-medium uppercase tracking-[0.2em] placeholder-neutral-300 text-neutral-900 focus:outline-none rounded-none border-none pl-0 pr-12"
             />
 
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-4 p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all focus:outline-none cursor-pointer"
+                className="absolute right-0 p-1 text-[9px] font-extrabold tracking-[0.1em] text-neutral-400 hover:text-neutral-900 transition-colors focus:outline-none cursor-pointer uppercase"
                 aria-label="Clear search"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                CLEAR
               </button>
             )}
           </div>
 
           {searchQuery && (
-            <p className="text-xs text-gray-500 mt-2.5 font-medium animate-in fade-in slide-in-from-top-1 duration-150">
+            <p className="text-[10px] text-neutral-400 uppercase tracking-[0.15em] mt-2 font-semibold animate-in fade-in slide-in-from-top-1 duration-150">
               {filteredRecipes.length === 0 ? (
-                <span>No recipes found matching &ldquo;<span className="font-semibold text-gray-800">{searchQuery}</span>&rdquo;</span>
+                <span>NO RESULTS MATCHING &ldquo;<span className="text-neutral-900">{searchQuery}</span>&rdquo;</span>
               ) : (
-                <span>Found <span className="font-semibold text-orange-600">{filteredRecipes.length}</span> {filteredRecipes.length === 1 ? 'recipe' : 'recipes'}</span>
+                <span>FOUND <span className="text-[#A94420] font-extrabold">{filteredRecipes.length}</span> {filteredRecipes.length === 1 ? 'MATCHING RECIPE' : 'MATCHING RECIPES'}</span>
               )}
             </p>
           )}
         </div>
 
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-4 text-gray-500 font-medium">Loading your recipes...</p>
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="w-8 h-8 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-[10px] font-bold text-neutral-400 tracking-[0.2em] uppercase">ACCESSING CATER ARCHIVES...</p>
           </div>
         ) : recipes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 px-4 bg-white border border-dashed border-gray-300 rounded-3xl shadow-sm text-center">
-            <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-orange-500">
+          <div className="flex flex-col items-center justify-center py-20 px-6 bg-white border border-neutral-200 rounded-none text-center max-w-xl mx-auto shadow-xs">
+            <div className="w-12 h-12 rounded-none border border-neutral-300 text-neutral-800 flex items-center justify-center mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Recipe Catalog is Empty</h2>
-            <p className="text-gray-500 max-w-md mb-8">
-              It looks like you haven't saved any recipes yet. Start building your collection to plan meals effortlessly!
+            <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.2em] mb-2">Recipe Catalog is Empty</h2>
+            <p className="text-xs text-neutral-400 leading-relaxed max-w-sm mb-8 font-medium">
+              Start building your premium culinary collection to plan customized menus effortlessly.
             </p>
             <Link
               href="/chat"
-              className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold shadow-md hover:bg-orange-700 hover:shadow-lg transition-all text-center"
+              className="bg-neutral-900 hover:bg-neutral-800 text-white px-8 py-3.5 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-neutral-900"
             >
-              Create via Recipe Bot
+              CREATE VIA BOT
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredRecipes.map((recipe) => (
               <RecipeCard
                 key={recipe.id}
@@ -164,59 +163,43 @@ export default function RecipesPage() {
         )}
       </div>
 
+      {/* Elegant Modal for Save Recipe */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          {/* Backdrop with backdrop-blur */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-modal-backdrop"
+            className="absolute inset-0 bg-neutral-950/40 backdrop-blur-xs transition-opacity duration-300"
             onClick={() => setIsModalOpen(false)}
           />
-          
-          {/* Modal Container */}
-          <div className="relative z-10 w-full max-w-md overflow-hidden bg-white border border-gray-100 rounded-3xl shadow-2xl p-8 text-center animate-modal-content">
-            {/* Elegant top icon decoration */}
-            <div className="mx-auto w-14 h-14 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mb-6 shadow-inner ring-4 ring-orange-50/50 animate-pulse">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-7 h-7">
+
+          <div className="relative z-10 w-full max-w-md bg-[#FAF9F6] border border-neutral-200 p-8 text-center rounded-none shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="mx-auto w-12 h-12 border border-neutral-300 text-neutral-800 flex items-center justify-center mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
               </svg>
             </div>
 
-            <h3 className="text-xl font-black text-gray-900 mb-3 tracking-tight">
+            <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-3">
               Create a New Recipe
             </h3>
-            
-            <p className="text-gray-500 text-sm leading-relaxed mb-6 font-semibold">
-              To save or create a new recipe, chat with <span className="font-bold text-orange-600">Chef Ferraro</span>! Simply tell the chef what ingredients you have or ask to build a custom meal plan.
+
+            <p className="text-xs text-neutral-400 leading-relaxed mb-8 font-medium">
+              To curate or compose a custom recipe, initiate a dialogue with <span className="font-bold text-neutral-800">Chef Ferraro</span>. Direct the chef with your ingredients or scaling demands.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="order-2 sm:order-1 px-6 py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                className="order-2 sm:order-1 px-6 py-3 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-none transition-colors cursor-pointer"
               >
-                Cancel
+                CANCEL
               </button>
               <Link
                 href="/chat"
-                className="order-1 sm:order-2 bg-gradient-to-r from-orange-500 to-rose-500 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-orange-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-center flex items-center justify-center gap-1.5"
+                className="order-1 sm:order-2 bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center flex items-center justify-center gap-1.5 border border-neutral-900"
               >
-                Go to Chef Ferraro
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
+                GO TO CHEF FERRARO &rarr;
               </Link>
             </div>
-
-            {/* Absolute close button */}
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all cursor-pointer focus:outline-none"
-              aria-label="Close modal"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
           </div>
         </div>
       )}
@@ -232,76 +215,63 @@ function RecipeCard({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="bg-white border border-gray-200 overflow-hidden shadow-xs hover:shadow-md hover:translate-y-[-2px] transition-all duration-200 flex flex-col h-full rounded-2xl">
-      <img
-        src={recipe.imageUrl}
-        alt={recipe.title}
-        className="w-full h-48 object-cover"
-      />
-      <div className="p-5 flex flex-col grow">
+    <div className="bg-white border border-neutral-200/60 rounded-none flex flex-col h-full hover:border-neutral-900 transition-all duration-300 group shadow-xs">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-none border-b border-neutral-100">
+        <img
+          src={recipe.imageUrl}
+          alt={recipe.title}
+          className="w-full h-full object-cover rounded-none group-hover:scale-102 transition-transform duration-500 ease-out"
+        />
+      </div>
+      <div className="p-6 flex flex-col grow text-left">
+
+        {/* Category & Tags */}
+        <div className="text-[9px] font-bold text-[#A94420] tracking-[0.25em] uppercase mb-2">
+          {recipe.cuisine ? `${recipe.cuisine} ` : ""}
+          {recipe.dietaryTags ? `• ${recipe.dietaryTags.split(",")[0].trim()}` : ""}
+        </div>
+
         <Link href={`/recipes/${recipe.id}`}>
-          <h3 className="text-lg font-bold text-orange-600 hover:text-orange-700 transition-colors mb-2 line-clamp-1">{recipe.title}</h3>
+          <h3 className="text-sm font-bold text-neutral-900 hover:text-neutral-500 tracking-wider transition-colors mb-2 uppercase line-clamp-1">
+            {recipe.title}
+          </h3>
         </Link>
-        <p className="text-gray-500 text-sm mb-4 line-clamp-2 grow">
+
+        <p className="text-xs text-neutral-500 leading-relaxed font-light mb-6 line-clamp-2 grow">
           {recipe.description}
         </p>
-        <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-400 mb-4 border-b border-gray-50 pb-3">
-          <span className="flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Prep: {recipe.prepTime}m
-          </span>
-          <span className="flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" />
-            </svg>
-            Cook: {recipe.cookTime}m
-          </span>
-          <span className="flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.079-13.13A10.53 10.53 0 0012 3c1.252 0 2.455.22 3.57.621m-9.74 5.114c0 1.62 1.312 2.933 2.933 2.933 1.621 0 2.933-1.313 2.933-2.933 0-1.62-1.312-2.933-2.933-2.933-1.621 0-2.933 1.313-2.933 2.933zM18 7.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6 7.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-            </svg>
-            Serves: {recipe.servings}
-          </span>
+
+        {/* Specs bar */}
+        <div className="flex items-center gap-2 text-[8.5px] font-semibold tracking-[0.12em] text-neutral-400 uppercase border-t border-neutral-100 pt-4 mb-5">
+          <span>PREP: {recipe.prepTime}M</span>
+          <span className="text-neutral-200">|</span>
+          <span>COOK: {recipe.cookTime}M</span>
+          <span className="text-neutral-200">|</span>
+          <span>{recipe.servings} SERVINGS</span>
           {recipe.calories && (
-            <span className="flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="w-3.5 h-3.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21l8.982-8.982a9.001 9.001 0 10-14.773-4.43 9.002 9.002 0 0011.536 12.013l-4.932-3.697zm0 0L9 21" />
-              </svg>
-              {recipe.calories} kcal
-            </span>
+            <>
+              <span className="text-neutral-200">|</span>
+              <span className="text-[#A94420] font-bold">{recipe.calories} KCAL</span>
+            </>
           )}
         </div>
-        {recipe.dietaryTags && (
-          <div className="flex flex-wrap gap-1.5 mb-5">
-            {recipe.dietaryTags.split(",").map((tag) => (
-              <span
-                key={tag}
-                className="bg-orange-50 text-orange-700 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md border border-orange-100"
-              >
-                {tag.trim()}
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="flex gap-2 mt-auto">
+
+        {/* Actions */}
+        <div className="flex gap-2">
           <Link
             href={`/recipes/${recipe.id}`}
-            className="flex-1 text-center bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+            className="flex-1 text-center bg-neutral-950 hover:bg-neutral-800 text-white py-3 text-[9px] font-bold tracking-[0.2em] uppercase rounded-none transition-colors duration-200 border border-neutral-950"
           >
-            View Details
+            VIEW DETAILS
           </Link>
           <button
             onClick={() => onDelete(recipe.id)}
-            className="bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 text-xs font-bold rounded-xl border border-red-200 transition-colors cursor-pointer"
+            className="bg-transparent hover:bg-rose-50 hover:text-rose-700 text-neutral-400 hover:border-rose-200 border border-neutral-200/80 rounded-none px-4 py-3 text-[9px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer"
           >
-            Delete
+            DELETE
           </button>
         </div>
       </div>
     </div>
   );
 }
-

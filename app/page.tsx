@@ -10,7 +10,7 @@ import About from "./components/About";
 
 export default function Home() {
   return (
-    <main className="relative w-full min-h-screen bg-black">
+    <main className="relative w-full min-h-screen bg-black text-white">
       <Navbar />
       <Hero />
       <Vibe />
