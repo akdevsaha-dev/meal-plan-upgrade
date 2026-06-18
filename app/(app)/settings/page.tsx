@@ -38,8 +38,8 @@ interface UsageData {
   limits: {
     recipesPerDay: number;
     recipesPerMonth: number;
-    chatsMonth: number;
-    plannersWeek: number;
+    chatsPerMonth: number;
+    plannersPerWeek: number;
   };
 }
 
@@ -572,14 +572,14 @@ export default function SettingsPage() {
                       <QuotaProgressBar
                         title="Chef Ferraro Chats This Month"
                         value={usageData.usage.chatsMonth}
-                        max={usageData.limits.chatsMonth}
+                        max={usageData.limits.chatsPerMonth}
                       />
 
                       {/* Planners Week */}
                       <QuotaProgressBar
                         title="Meal Planners Created (7d)"
                         value={usageData.usage.plannersWeek}
-                        max={usageData.limits.plannersWeek}
+                        max={usageData.limits.plannersPerWeek}
                       />
 
                     </div>

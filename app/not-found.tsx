@@ -37,7 +37,6 @@ export default function NotFound() {
         >
           RETURN HOME
         </Link>
-
       </div>
     </div>
   );

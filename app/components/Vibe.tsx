@@ -17,12 +17,17 @@ export const Vibe = () => {
   const section1Ref = useRef<HTMLDivElement>(null);
   const headline1Ref = useRef<HTMLHeadingElement>(null);
   const desc1Ref = useRef<HTMLDivElement>(null);
+  const headline1FloatRef = useRef<HTMLSpanElement>(null);
+  const desc1FloatRef = useRef<HTMLDivElement>(null);
+  const bgImg1Ref = useRef<HTMLImageElement>(null);
 
   const section2Ref = useRef<HTMLDivElement>(null);
   const imgContainer2Ref = useRef<HTMLDivElement>(null);
   const img2Ref = useRef<HTMLImageElement>(null);
   const headline2Ref = useRef<HTMLHeadingElement>(null);
   const descContainer2Ref = useRef<HTMLDivElement>(null);
+  const headline2FloatRef = useRef<HTMLSpanElement>(null);
+  const desc2FloatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const s1Tl = gsap.timeline({
@@ -43,6 +48,43 @@ export const Vibe = () => {
       { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
       "-=0.4"
     );
+
+    // Section 1 Background Parallax Scrub
+    const s1BgTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: section1Ref.current,
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      },
+    });
+
+    s1BgTl.fromTo(
+      bgImg1Ref.current,
+      { yPercent: -8 },
+      { yPercent: 8, ease: "none" }
+    );
+
+    // Section 1 Idle Floating Loop
+    const floatH1 = gsap.to(headline1FloatRef.current, {
+      y: -8,
+      x: 3,
+      rotation: 0.3,
+      duration: 5,
+      ease: "sine.inOut",
+      yoyo: true,
+      repeat: -1,
+    });
+
+    const floatD1 = gsap.to(desc1FloatRef.current, {
+      y: 6,
+      x: -2,
+      rotation: -0.2,
+      duration: 4.5,
+      ease: "sine.inOut",
+      yoyo: true,
+      repeat: -1,
+    });
 
     const s2ImgTl = gsap.timeline({
       scrollTrigger: {
@@ -82,6 +124,36 @@ export const Vibe = () => {
       { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
       "-=0.5"
     );
+
+    // Section 2 Idle Floating Loop
+    const floatH2 = gsap.to(headline2FloatRef.current, {
+      y: -6,
+      x: 2,
+      duration: 4.8,
+      ease: "sine.inOut",
+      yoyo: true,
+      repeat: -1,
+    });
+
+    const floatD2 = gsap.to(desc2FloatRef.current, {
+      y: 5,
+      x: -2,
+      duration: 4.2,
+      ease: "sine.inOut",
+      yoyo: true,
+      repeat: -1,
+    });
+
+    return () => {
+      s1Tl.kill();
+      s1BgTl.kill();
+      s2ImgTl.kill();
+      s2TextTl.kill();
+      floatH1.kill();
+      floatD1.kill();
+      floatH2.kill();
+      floatD2.kill();
+    };
   }, []);
 
   return (
@@ -92,9 +164,10 @@ export const Vibe = () => {
         className="relative w-full h-screen overflow-hidden bg-black"
       >
         <img
+          ref={bgImg1Ref}
           src="/images/next-h.png"
           alt="Vibe Background"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute -top-[10%] left-0 w-full h-[120%] object-cover object-center"
         />
 
         <div className="absolute inset-0 bg-black/40 z-10" />
@@ -110,9 +183,11 @@ export const Vibe = () => {
             ref={headline1Ref}
             className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-light tracking-[0.12em] uppercase leading-[1.2] text-white"
           >
-            CATER, WHERE<br />
-            COOKING<br />
-            BECOMES SIMPLE
+            <span ref={headline1FloatRef} className="block">
+              CATER, WHERE<br />
+              COOKING<br />
+              BECOMES SIMPLE
+            </span>
           </h2>
         </div>
 
@@ -120,26 +195,28 @@ export const Vibe = () => {
           ref={desc1Ref}
           className="absolute bottom-16 right-6 sm:right-12 md:right-20 lg:right-28 z-20 flex flex-col items-start text-left max-w-xs sm:max-w-sm md:max-w-md"
         >
-          <p className="text-xs sm:text-sm text-white/80 leading-relaxed font-light tracking-wider">
-            Guided by flavor, memory, and craft. An AI Chef rooted in simplicity, led by precision, and made to be shared.
-          </p>
+          <div ref={desc1FloatRef} className="w-full flex flex-col items-start text-left">
+            <p className="text-xs sm:text-sm text-white/80 leading-relaxed font-light tracking-wider">
+              Guided by flavor, memory, and craft. An AI Chef rooted in simplicity, led by precision, and made to be shared.
+            </p>
 
-          <div className="mt-6 flex items-center gap-3 cursor-pointer group">
-            <span className="text-xs sm:text-sm font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover:opacity-80">
-              EXPLORE MORE
-            </span>
-            <div className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-black group-hover:border-white">
-              <svg
-                className="w-3.5 h-3.5 fill-current"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
+            <div className="mt-6 flex items-center gap-3 cursor-pointer group">
+              <span className="text-xs sm:text-sm font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover:opacity-80">
+                EXPLORE MORE
+              </span>
+              <div className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-black group-hover:border-white">
+                <svg
+                  className="w-3.5 h-3.5 fill-current"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </div>
             </div>
           </div>
         </div>
@@ -169,8 +246,10 @@ export const Vibe = () => {
               ref={headline2Ref}
               className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-widest sm:tracking-[0.15em] uppercase leading-[1.25] text-white"
             >
-              FLAVORS THAT<br />
-              HOLD THE MOMENT
+              <span ref={headline2FloatRef} className="block">
+                FLAVORS THAT<br />
+                HOLD THE MOMENT
+              </span>
             </h2>
           </div>
 
@@ -178,26 +257,28 @@ export const Vibe = () => {
             ref={descContainer2Ref}
             className="flex flex-col items-start text-left max-w-sm sm:max-w-md"
           >
-            <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-light tracking-wider">
-              Cooking is not instruction, it is transformation. It is raw ingredients becoming meaning through time, heat, and judgment. It is a quiet intelligence where every step reshapes what is possible on the plate.
-            </p>
+            <div ref={desc2FloatRef} className="w-full flex flex-col items-start text-left">
+              <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-light tracking-wider">
+                Cooking is not instruction, it is transformation. It is raw ingredients becoming meaning through time, heat, and judgment. It is a quiet intelligence where every step reshapes what is possible on the plate.
+              </p>
 
-            <div className="mt-6 sm:mt-8 flex items-center gap-3 cursor-pointer group">
-              <span className="text-xs sm:text-sm font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover:opacity-80">
-                VIEW FULL MENU
-              </span>
-              <div className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-black group-hover:border-white">
-                <svg
-                  className="w-3.5 h-3.5 fill-current"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
+              <div className="mt-6 sm:mt-8 flex items-center gap-3 cursor-pointer group">
+                <span className="text-xs sm:text-sm font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover:opacity-80">
+                  VIEW FULL MENU
+                </span>
+                <div className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-black group-hover:border-white">
+                  <svg
+                    className="w-3.5 h-3.5 fill-current"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
