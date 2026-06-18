@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Montserrat } from "next/font/google";
+import { MealPlansSkeleton } from "@/app/components/Skeletons";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -143,12 +144,8 @@ export default function MealPlansPage() {
           </button>
         </div>
 
-        {/* Loader state */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-24">
-            <div className="w-8 h-8 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-4 text-[10px] font-bold text-neutral-400 tracking-[0.2em] uppercase">ACCESSING CATER ARCHIVES...</p>
-          </div>
+          <MealPlansSkeleton />
         ) : mealPlans.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-6 bg-white border border-neutral-200 rounded-xl text-center max-w-xl mx-auto shadow-sm">
             <div className="w-12 h-12 rounded-full border border-neutral-300 text-neutral-800 flex items-center justify-center mb-6">

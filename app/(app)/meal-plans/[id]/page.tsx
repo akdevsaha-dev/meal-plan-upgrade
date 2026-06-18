@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { Montserrat } from "next/font/google";
+import { MealPlanDetailSkeleton } from "@/app/components/Skeletons";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -175,10 +176,9 @@ export default function MealPlanDetailPage({
 
   if (!mealPlan) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#FAF9F6]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-900 border-t-transparent"></div>
-          <p className="text-neutral-400 text-[10px] font-bold tracking-[0.2em] uppercase">Loading planner...</p>
+      <div className={`${montserrat.variable} font-sans min-h-screen bg-[#FAF9F6] text-[#111111]`}>
+        <div className="mx-auto max-w-[1600px] px-6 sm:px-12 md:px-16 lg:px-20 pt-4 lg:pt-6 pb-12 lg:pb-16">
+          <MealPlanDetailSkeleton />
         </div>
       </div>
     );

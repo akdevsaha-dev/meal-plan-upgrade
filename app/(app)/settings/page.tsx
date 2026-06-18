@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Montserrat } from "next/font/google";
+import { ProfileSkeleton, BillingSkeleton, UsageSkeleton } from "@/app/components/Skeletons";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -266,17 +267,6 @@ export default function SettingsPage() {
     }
   }
 
-  if (!user) {
-    return (
-      <div className={`flex min-h-screen items-center justify-center bg-[#FAF9F6] ${montserrat.variable} font-sans`}>
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-900 border-t-transparent"></div>
-          <p className="text-[10px] font-bold text-neutral-400 tracking-[0.2em] uppercase">ACCESSING CATER SETTINGS...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={`${montserrat.variable} font-sans relative min-h-screen bg-[#FAF9F6] text-[#111111]`}>
 
@@ -302,8 +292,8 @@ export default function SettingsPage() {
             <button
               onClick={() => setActiveTab("profile")}
               className={`flex-1 md:flex-initial text-left px-4 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer ${activeTab === "profile"
-                  ? "border-b-2 md:border-b-0 md:border-l-2 border-neutral-900 bg-neutral-900/5 text-neutral-900"
-                  : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-neutral-900 hover:bg-neutral-900/5"
+                ? "border-b-2 md:border-b-0 md:border-l-2 border-neutral-900 bg-neutral-900/5 text-neutral-900"
+                : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-neutral-900 hover:bg-neutral-900/5"
                 }`}
             >
               Profile Settings
@@ -311,8 +301,8 @@ export default function SettingsPage() {
             <button
               onClick={() => setActiveTab("billing")}
               className={`flex-1 md:flex-initial text-left px-4 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer ${activeTab === "billing"
-                  ? "border-b-2 md:border-b-0 md:border-l-2 border-neutral-900 bg-neutral-900/5 text-neutral-900"
-                  : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-neutral-900 hover:bg-neutral-900/5"
+                ? "border-b-2 md:border-b-0 md:border-l-2 border-neutral-900 bg-neutral-900/5 text-neutral-900"
+                : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-neutral-900 hover:bg-neutral-900/5"
                 }`}
             >
               Billing & Plan
@@ -320,8 +310,8 @@ export default function SettingsPage() {
             <button
               onClick={() => setActiveTab("usage")}
               className={`flex-1 md:flex-initial text-left px-4 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer ${activeTab === "usage"
-                  ? "border-b-2 md:border-b-0 md:border-l-2 border-neutral-900 bg-neutral-900/5 text-neutral-900"
-                  : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-neutral-900 hover:bg-neutral-900/5"
+                ? "border-b-2 md:border-b-0 md:border-l-2 border-neutral-900 bg-neutral-900/5 text-neutral-900"
+                : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-neutral-900 hover:bg-neutral-900/5"
                 }`}
             >
               Usage & Quotas
@@ -329,8 +319,8 @@ export default function SettingsPage() {
             <button
               onClick={() => setActiveTab("danger")}
               className={`flex-1 md:flex-initial text-left px-4 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer ${activeTab === "danger"
-                  ? "border-b-2 md:border-b-0 md:border-l-2 border-rose-600 bg-rose-50 text-rose-700"
-                  : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-rose-600 hover:bg-rose-50/50"
+                ? "border-b-2 md:border-b-0 md:border-l-2 border-rose-600 bg-rose-50 text-rose-700"
+                : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-rose-600 hover:bg-rose-50/50"
                 }`}
             >
               Delete Account
@@ -340,190 +330,194 @@ export default function SettingsPage() {
           {/* Active Tab Panel */}
           <div className="flex-1 max-w-2xl">
             {activeTab === "profile" && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div>
-                  <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.18em]">
-                    Profile Information
-                  </h2>
-                  <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-[0.15em] mt-1.5">
-                    Registered details on the Cater platform
-                  </p>
-                </div>
-
-                <div className="space-y-6 pt-4">
-                  {/* Name section (conditional editing UI) */}
-                  {isEditing ? (
-                    <form onSubmit={handleUpdateName} className="space-y-6">
-                      <div className="flex flex-col border-b border-neutral-900 py-1 transition-colors">
-                        <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1.5">
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          value={nameInput}
-                          onChange={(e) => {
-                            setNameInput(e.target.value);
-                            setUpdateSuccess(false);
-                            setUpdateError(null);
-                          }}
-                          required
-                          autoFocus
-                          className="w-full bg-transparent text-xs font-bold text-neutral-800 uppercase tracking-[0.1em] focus:outline-none py-1"
-                        />
-                      </div>
-
-                      {/* Save & Cancel Actions */}
-                      <div className="flex gap-3 pt-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsEditing(false);
-                            setNameInput(user.name);
-                            setUpdateError(null);
-                            setUpdateSuccess(false);
-                          }}
-                          className="px-6 py-3 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-lg transition-colors cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={isUpdatingName || nameInput.trim() === user.name}
-                          className="bg-neutral-950 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer shadow-xs border border-neutral-950 disabled:opacity-50"
-                        >
-                          {isUpdatingName ? "Saving..." : "Save Changes"}
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <div className="flex justify-between items-end border-b border-neutral-200 py-1 opacity-85 hover:border-neutral-400 transition-colors">
-                      <div className="flex-1 flex flex-col">
-                        <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1.5">
-                          Full Name
-                        </label>
-                        <span className="text-xs font-bold text-neutral-800 uppercase tracking-[0.1em] py-1 select-none">
-                          {user.name}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setNameInput(user.name);
-                          setIsEditing(true);
-                          setUpdateSuccess(false);
-                          setUpdateError(null);
-                        }}
-                        className="text-[9px] font-bold text-neutral-500 hover:text-neutral-900 tracking-[0.2em] uppercase pb-1 transition-colors cursor-pointer"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Email address row */}
-                  <div className="flex flex-col border-b border-neutral-200 py-1 opacity-75">
-                    <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1.5">
-                      Email Address
-                    </label>
-                    <span className="text-xs font-semibold text-neutral-500 uppercase tracking-[0.1em] py-1 select-none">
-                      {user.email}
-                    </span>
+              !user ? (
+                <ProfileSkeleton />
+              ) : (
+                <div className="space-y-8 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div>
+                    <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.18em]">
+                      Profile Information
+                    </h2>
+                    <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-[0.15em] mt-1.5">
+                      Registered details on the Cater platform
+                    </p>
                   </div>
 
-                  {/* Feedback status messages */}
-                  {updateError && (
-                    <p className="text-[10px] text-rose-600 font-bold uppercase tracking-[0.15em] animate-in fade-in slide-in-from-top-1 duration-150">
-                      {updateError}
-                    </p>
-                  )}
-                  {updateSuccess && (
-                    <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-[0.15em] animate-in fade-in slide-in-from-top-1 duration-150">
-                      Name updated successfully
-                    </p>
-                  )}
-                </div>
+                  <div className="space-y-6 pt-4">
+                    {/* Name section (conditional editing UI) */}
+                    {isEditing ? (
+                      <form onSubmit={handleUpdateName} className="space-y-6">
+                        <div className="flex flex-col border-b border-neutral-900 py-1 transition-colors">
+                          <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1.5">
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            value={nameInput}
+                            onChange={(e) => {
+                              setNameInput(e.target.value);
+                              setUpdateSuccess(false);
+                              if (updateError) setUpdateError(null);
+                            }}
+                            required
+                            autoFocus
+                            className="w-full bg-transparent text-xs font-bold text-neutral-800 uppercase tracking-widest focus:outline-none py-1"
+                          />
+                        </div>
 
-                {/* Logout Option Below */}
-                <div className="pt-8 border-t border-neutral-900/10 mt-8">
-                  <button
-                    onClick={handleLogout}
-                    className="bg-transparent hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-neutral-600 px-8 py-3.5 border border-neutral-200 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer"
-                  >
-                    Log Out
-                  </button>
+                        <div className="flex gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEditing(false);
+                              setNameInput(user.name);
+                            }}
+                            className="px-6 py-2 border border-neutral-300 hover:bg-neutral-100 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-lg transition-colors cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={isUpdatingName || nameInput.trim() === user.name}
+                            className="bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-2 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all border border-neutral-900 disabled:opacity-50 cursor-pointer"
+                          >
+                            {isUpdatingName ? "Saving..." : "Save Name"}
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="flex flex-col border-b border-neutral-900/10 py-1">
+                        <div className="flex justify-between items-center">
+                          <div className="flex flex-col">
+                            <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1.5">
+                              Full Name
+                            </label>
+                            <span className="text-xs font-bold text-neutral-800 uppercase tracking-widest py-1 select-none">
+                              {user.name}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setNameInput(user.name);
+                              setIsEditing(true);
+                            }}
+                            className="px-4 py-1.5 border border-neutral-300 hover:bg-neutral-150/40 text-neutral-600 text-[10px] font-extrabold tracking-[0.2em] uppercase rounded-md transition-colors cursor-pointer"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Email address field (readonly) */}
+                    <div className="flex flex-col border-b border-neutral-900/10 py-1">
+                      <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1.5">
+                        Email Address
+                      </label>
+                      <span className="text-xs font-semibold text-neutral-500 uppercase tracking-widest py-1 select-none">
+                        {user.email}
+                      </span>
+                    </div>
+
+                    {/* Feedback status messages */}
+                    {updateError && (
+                      <p className="text-[10px] text-rose-600 font-bold uppercase tracking-[0.15em] animate-in fade-in slide-in-from-top-1 duration-150">
+                        {updateError}
+                      </p>
+                    )}
+                    {updateSuccess && (
+                      <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-[0.15em] animate-in fade-in slide-in-from-top-1 duration-150">
+                        Name updated successfully
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Logout Option Below */}
+                  <div className="pt-8 border-t border-neutral-900/10 mt-8">
+                    <button
+                      onClick={handleLogout}
+                      className="bg-transparent hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-neutral-600 px-8 py-3.5 border border-neutral-200 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer"
+                    >
+                      Log Out
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )
             )}
 
             {activeTab === "billing" && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div>
-                  <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.18em]">
-                    Plan & Subscription
-                  </h2>
-                  <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-[0.15em] mt-1.5">
-                    Review your active subscription tier or upgrade your access
-                  </p>
-                </div>
-
-                <div className="bg-white border border-neutral-200/60 rounded-xl p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-sm hover:shadow-md transition-all duration-300">
+              (!user || !usageData) ? (
+                <BillingSkeleton />
+              ) : (
+                <div className="space-y-8 animate-in fade-in slide-in-from-top-1 duration-200">
                   <div>
-                    <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-[0.25em]">Current Account Plan</span>
-                    <div className="flex items-center gap-3 mt-2">
-                      <h3 className="text-lg font-extrabold text-neutral-950 uppercase tracking-wider">
-                        {user.hasProAccess ? "Pro Plan" : "Free Plan"}
-                      </h3>
-                      <span className={`inline-flex items-center gap-1.5 text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${user.hasProAccess
-                        ? "bg-green-50 text-green-700 border border-green-200/60"
-                        : "bg-neutral-100 text-neutral-600 border border-neutral-200"
-                        }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${user.hasProAccess ? "bg-green-600 animate-pulse" : "bg-neutral-400"}`}></span>
-                        {user.hasProAccess ? "Active" : "Inactive"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="sm:text-right border-t sm:border-t-0 border-neutral-100 pt-4 sm:pt-0">
-                    <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-[0.25em]">Price</span>
-                    <p className="text-xl font-black text-neutral-950 mt-1 uppercase tracking-wider">
-                      {user.hasProAccess ? "$29.99 / mo" : "$0.00 / mo"}
+                    <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.18em]">
+                      Plan & Subscription
+                    </h2>
+                    <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-[0.15em] mt-1.5">
+                      Review your active subscription tier or upgrade your access
                     </p>
                   </div>
-                </div>
 
-                <div className="pt-4 space-y-4">
-                  {!user.hasProAccess ? (
-                    <div className="space-y-6">
-                      <p className="text-xs text-neutral-500 leading-relaxed font-medium uppercase tracking-wider">
-                        Upgrade to Pro to unlock advanced AI-powered recipe generation, custom nutrition filters, and unlimited meal planning schedules.
-                      </p>
-                      <button
-                        onClick={handleUpgrade}
-                        className="bg-neutral-950 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md border border-neutral-950"
-                      >
-                        Upgrade to Pro Plan
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      <p className="text-xs text-neutral-500 leading-relaxed font-medium uppercase tracking-wider">
-                        All premium features are fully active on your account. If you would like to end your subscription, you can click the button below to cancel your recurring billing setup.
-                      </p>
-                      {!user.cancelAtPeriodEnd && (user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing") ? (
-                        <button
-                          onClick={handleCancelSubscription}
-                          className="bg-transparent hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-neutral-600 px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase border border-neutral-200 transition-all cursor-pointer"
-                        >
-                          Cancel Plan
-                        </button>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
-                          Your subscription is canceling (access active until period end)
+                  <div className="bg-white border border-neutral-200/60 rounded-xl p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div>
+                      <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-[0.25em]">Current Account Plan</span>
+                      <div className="flex items-center gap-3 mt-2">
+                        <h3 className="text-lg font-extrabold text-neutral-950 uppercase tracking-wider">
+                          {user.hasProAccess ? "Pro Plan" : "Free Plan"}
+                        </h3>
+                        <span className={`inline-flex items-center gap-1.5 text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${user.hasProAccess
+                          ? "bg-green-50 text-green-700 border border-green-200/60"
+                          : "bg-neutral-100 text-neutral-600 border border-neutral-200"
+                          }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${user.hasProAccess ? "bg-green-600 animate-pulse" : "bg-neutral-400"}`}></span>
+                          {user.hasProAccess ? "Active" : "Inactive"}
                         </span>
-                      )}
+                      </div>
                     </div>
-                  )}
+                    <div className="sm:text-right border-t sm:border-t-0 border-neutral-100 pt-4 sm:pt-0">
+                      <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-[0.25em]">Price</span>
+                      <p className="text-xl font-black text-neutral-950 mt-1 uppercase tracking-wider">
+                        {user.hasProAccess ? "$29.99 / mo" : "$0.00 / mo"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 space-y-4">
+                    {!user.hasProAccess ? (
+                      <div className="space-y-6">
+                        <p className="text-xs text-neutral-500 leading-relaxed font-medium uppercase tracking-wider">
+                          Upgrade to Pro to unlock advanced AI-powered recipe generation, custom nutrition filters, and unlimited meal planning schedules.
+                        </p>
+                        <button
+                          onClick={handleUpgrade}
+                          className="bg-neutral-950 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md border border-neutral-950"
+                        >
+                          Upgrade to Pro Plan
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <p className="text-xs text-neutral-500 leading-relaxed font-medium uppercase tracking-wider">
+                          All premium features are fully active on your account. If you would like to end your subscription, you can click the button below to cancel your recurring billing setup.
+                        </p>
+                        {!user.cancelAtPeriodEnd && (user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing") ? (
+                          <button
+                            onClick={handleCancelSubscription}
+                            className="bg-transparent hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-neutral-600 px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase border border-neutral-200 transition-all cursor-pointer"
+                          >
+                            Cancel Plan
+                          </button>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
+                            Your subscription is canceling (access active until period end)
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )
             )}
 
             {activeTab === "usage" && (
@@ -559,7 +553,7 @@ export default function SettingsPage() {
 
                     {/* Progress Bars Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      
+
                       {/* Recipes Today */}
                       <QuotaProgressBar
                         title="Recipes Created Today"
@@ -609,10 +603,7 @@ export default function SettingsPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-6 h-6 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="mt-3 text-[9px] font-bold text-neutral-400 tracking-[0.2em] uppercase">Calculating metrics...</p>
-                  </div>
+                  <UsageSkeleton />
                 )}
               </div>
             )}
@@ -840,9 +831,8 @@ function QuotaProgressBar({
       {!isInfinite && (
         <div className="w-full bg-neutral-100 h-2.5 rounded-full overflow-hidden border border-neutral-200/30">
           <div
-            className={`h-full rounded-full transition-all duration-500 ease-out ${
-              isWarning ? "bg-rose-600 animate-pulse" : "bg-neutral-900"
-            }`}
+            className={`h-full rounded-full transition-all duration-500 ease-out ${isWarning ? "bg-rose-600 animate-pulse" : "bg-neutral-900"
+              }`}
             style={{ width: `${percentage}%` }}
           />
         </div>

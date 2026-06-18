@@ -5,6 +5,7 @@ import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
 import ChatRecipeCard, { Recipe } from "@/app/components/ChatRecipeCard";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { ChatSkeleton } from "@/app/components/Skeletons";
 
 interface Message {
   id?: string;
@@ -19,6 +20,7 @@ export default function ChatPage() {
   const [rateLimitError, setRateLimitError] = useState<string | null>(null);
   const [recipes, setRecipes] = useState<Record<string, Recipe>>({});
   const [usage, setUsage] = useState<any>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,6 +47,9 @@ export default function ChatPage() {
         })
         .catch((err) => {
           console.error("Failed to load chat history:", err);
+        })
+        .finally(() => {
+          setIsInitialLoading(false);
         });
 
       // Fetch usage data to check limits
@@ -57,11 +62,11 @@ export default function ChatPage() {
             setUsage(data);
             const { usage: u, limits: l, plan } = data;
             const upgradeMessage = " Upgrade to the Pro Plan to unlock higher limits and unlimited features.";
-            if (u.chatsMonth >= l.chatsPerMonth) {
+            if (l.chatsPerMonth !== null && l.chatsPerMonth !== undefined && u.chatsMonth >= l.chatsPerMonth) {
               setRateLimitError(`Monthly Chef Ferraro chat limit reached (${u.chatsMonth}/${l.chatsPerMonth}).${plan === "free" ? upgradeMessage : ""}`);
-            } else if (u.recipesToday >= l.recipesPerDay) {
+            } else if (l.recipesPerDay !== null && l.recipesPerDay !== undefined && u.recipesToday >= l.recipesPerDay) {
               setRateLimitError(`Daily recipe limit reached (${u.recipesToday}/${l.recipesPerDay}).${plan === "free" ? upgradeMessage : ""}`);
-            } else if (u.recipesMonth >= l.recipesPerMonth) {
+            } else if (l.recipesPerMonth !== null && l.recipesPerMonth !== undefined && u.recipesMonth >= l.recipesPerMonth) {
               setRateLimitError(`Monthly recipe limit reached (${u.recipesMonth}/${l.recipesPerMonth}).${plan === "free" ? upgradeMessage : ""}`);
             }
           }
@@ -235,7 +240,9 @@ export default function ChatPage() {
         <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
           <div className="max-w-4xl mx-auto space-y-6">
 
-            {messages.length === 0 && (
+            {isInitialLoading ? (
+              <ChatSkeleton />
+            ) : messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center mt-12 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="p-4 bg-linear-to-tr from-orange-50 to-amber-50 dark:from-neutral-900 dark:to-neutral-950 rounded-full shadow-md border border-orange-100/50 dark:border-neutral-800 mb-6">
                   <ChefLogo size={64} priority />
@@ -262,7 +269,7 @@ export default function ChatPage() {
                   ))}
                 </div>
               </div>
-            )}
+            ) : null}
 
             {messages.map((msg, i) => {
               const recipeId = getMessageRecipeId(msg.content);
