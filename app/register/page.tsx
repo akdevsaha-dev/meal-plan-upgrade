@@ -71,7 +71,7 @@ export default function RegisterPage() {
     >
       {/* Left side: Registration form */}
       <div className="w-full lg:w-[45%] flex flex-col justify-between min-h-[620px] lg:h-full py-6 px-4 sm:px-8">
-        
+
         {/* Brand Header */}
         <div className="flex items-center gap-2">
           <CaterLogo size={24} />
@@ -95,8 +95,8 @@ export default function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            
+          <form onSubmit={handleSubmit} method="POST" className="space-y-4">
+
             {/* Name Field */}
             <div>
               <div className="flex justify-between items-baseline mb-1.5">
@@ -118,9 +118,8 @@ export default function RegisterPage() {
                   autoComplete="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className={`w-full px-4 py-2.5 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${
-                    fieldErrors.name ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
-                  }`}
+                  className={`w-full px-4 py-2.5 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${fieldErrors.name ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
+                    }`}
                   placeholder="Enter your name"
                   disabled={isSubmitting}
                 />
@@ -155,9 +154,8 @@ export default function RegisterPage() {
                   autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full px-4 py-2.5 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${
-                    fieldErrors.email ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
-                  }`}
+                  className={`w-full px-4 py-2.5 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${fieldErrors.email ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
+                    }`}
                   placeholder="Enter your email"
                   disabled={isSubmitting}
                 />
@@ -192,9 +190,8 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full pl-4 pr-11 py-2.5 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${
-                    fieldErrors.password ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
-                  }`}
+                  className={`w-full pl-4 pr-11 py-2.5 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${fieldErrors.password ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
+                    }`}
                   placeholder="Enter your password"
                   disabled={isSubmitting}
                 />

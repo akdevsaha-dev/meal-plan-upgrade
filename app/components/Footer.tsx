@@ -77,7 +77,7 @@ export default function Footer() {
             <span className="text-[10px] sm:text-xs tracking-[0.25em] text-neutral-400 font-light uppercase mb-6 sm:mb-8">
               NEWSLETTER
             </span>
-            <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-6 w-full max-w-sm">
+            <form onSubmit={(e) => e.preventDefault()} method="POST" className="flex flex-col gap-6 w-full max-w-sm">
               <input
                 type="email"
                 placeholder="EMAIL"

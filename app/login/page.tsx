@@ -62,7 +62,7 @@ export default function LoginPage() {
     >
       {/* Left side: Authentication form */}
       <div className="w-full lg:w-[45%] flex flex-col justify-between min-h-[550px] lg:h-full py-8 px-4 sm:px-8">
-        
+
         {/* Brand Header */}
         <div className="flex items-center gap-2">
           <CaterLogo size={24} />
@@ -86,9 +86,9 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            
-            {/* Email Field */}
+
+          <form onSubmit={handleSubmit} method="POST" className="space-y-6">
+
             <div>
               <div className="flex justify-between items-baseline mb-2">
                 <label htmlFor="email" className="text-[10px] font-semibold text-neutral-400 uppercase tracking-widest">
@@ -109,9 +109,8 @@ export default function LoginPage() {
                   autoComplete="username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full px-4 py-3 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${
-                    fieldErrors.email ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
-                  }`}
+                  className={`w-full px-4 py-3 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${fieldErrors.email ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
+                    }`}
                   placeholder="Enter your email"
                   disabled={isSubmitting}
                 />
@@ -146,13 +145,12 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full pl-4 pr-11 py-3 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${
-                    fieldErrors.password ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
-                  }`}
+                  className={`w-full pl-4 pr-11 py-3 bg-white border rounded-xl text-sm text-neutral-900 placeholder-neutral-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all duration-200 ${fieldErrors.password ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-neutral-200/80"
+                    }`}
                   placeholder="Enter your password"
                   disabled={isSubmitting}
                 />
-                
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}

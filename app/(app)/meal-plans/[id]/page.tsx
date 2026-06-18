@@ -160,7 +160,7 @@ export default function MealPlanDetailPage({
   return (
     <div className="relative min-h-screen bg-linear-to-b from-white to-gray-50/70 font-sans text-gray-900">
       <div
-        className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-70 pointer-events-none"
+        className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-70 pointer-events-none"
         aria-hidden="true"
       />
       <CookingGifBackdrop position="absolute" stackClass="z-[1]" />
@@ -198,6 +198,7 @@ export default function MealPlanDetailPage({
         {isAddPanelOpen && (
           <form
             onSubmit={handleAddRecipe}
+            method="POST"
             className="bg-white border border-gray-100 rounded-3xl p-6 shadow-md mb-8 animate-in slide-in-from-top-4 duration-200 ease-out space-y-4 max-w-4xl"
           >
             <div>
@@ -303,7 +304,7 @@ export default function MealPlanDetailPage({
                                 <img
                                   src={item.recipe.imageUrl || "/images/recipes/classic-pancakes.jpg"}
                                   alt=""
-                                  className="w-7 h-7 rounded-lg object-cover flex-shrink-0"
+                                  className="w-7 h-7 rounded-lg object-cover shrink-0"
                                 />
                                 <Link
                                   href={`/recipes/${item.recipe.id}`}
@@ -314,7 +315,7 @@ export default function MealPlanDetailPage({
                               </div>
                               <button
                                 onClick={() => handleRemoveRecipe(item.id)}
-                                className="opacity-0 group-hover/item:opacity-100 text-gray-400 hover:text-red-650 hover:bg-red-50 p-1 rounded-md transition-all cursor-pointer flex-shrink-0"
+                                className="opacity-0 group-hover/item:opacity-100 text-gray-400 hover:text-red-650 hover:bg-red-50 p-1 rounded-md transition-all cursor-pointer shrink-0"
                                 title="Remove meal"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3">

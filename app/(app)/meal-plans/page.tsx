@@ -203,6 +203,7 @@ export default function MealPlansPage() {
 
             <form
               onSubmit={handleCreateMealPlan}
+              method="POST"
               className="relative bg-white rounded-2xl shadow-xl border border-gray-100 max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150 ease-out z-10"
             >
               <div>
