@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getUserFromRequest, hasProAccess } from "@/lib/auth";
+import { getUserFromRequest } from "@/lib/auth";
 import { withErrorHandler } from "@/lib/apiWrapper";
+import { checkQuota } from "@/lib/quota";
 
 export const GET = withErrorHandler(async (req: NextRequest) => {
   const session = getUserFromRequest(req);
@@ -30,24 +31,11 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   }
 
   const userId = session.userId;
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      subscriptionStatus: true,
-      currentPeriodEnd: true,
-    },
-  });
+  const quota = await checkQuota(userId, "create_recipe");
 
-  const isPro = user ? hasProAccess(user) : false;
-  const limit = isPro ? 200 : 10;
-
-  const recipeCount = await prisma.recipe.count({
-    where: { userId: userId },
-  });
-
-  if (recipeCount >= limit) {
+  if (!quota.allowed) {
     return NextResponse.json(
-      { error: `Recipe limit reached. You can only generate or save up to ${limit} recipes on your current plan. Upgrade to Pro for a higher limit.` },
+      { error: quota.error },
       { status: 403 }
     );
   }

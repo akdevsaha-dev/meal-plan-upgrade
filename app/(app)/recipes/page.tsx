@@ -29,6 +29,7 @@ export default function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [usageData, setUsageData] = useState<any>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -45,6 +46,19 @@ export default function RecipesPage() {
         setRecipes([]);
         setIsLoading(false);
       });
+
+    if (token) {
+      fetch("/api/usage", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && !data.error) {
+            setUsageData(data);
+          }
+        })
+        .catch((err) => console.error("Failed to load usage data:", err));
+    }
   }, []);
 
   function handleSaveRecipe() {
@@ -75,6 +89,11 @@ export default function RecipesPage() {
     return matchesTitle || matchesDescription || matchesCuisine || matchesTags || matchesIngredients;
   });
 
+  const hasHitRecipeLimit = usageData ? (
+    usageData.usage.recipesToday >= usageData.limits.recipesPerDay ||
+    usageData.usage.recipesMonth >= usageData.limits.recipesPerMonth
+  ) : false;
+
   return (
     <div className={`${montserrat.variable} font-sans min-h-screen bg-[#FAF9F6] text-[#111111]`}>
       <div className="mx-auto max-w-7xl px-6 sm:px-12 md:px-16 lg:px-24 pt-4 lg:pt-6 pb-12 lg:pb-16">
@@ -91,7 +110,7 @@ export default function RecipesPage() {
             onClick={handleSaveRecipe}
             className="rounded-none bg-neutral-900 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 cursor-pointer self-start sm:self-center border border-neutral-900"
           >
-            + SAVE RECIPE
+            {hasHitRecipeLimit ? "LIMIT REACHED" : "+ SAVE RECIPE"}
           </button>
         </div>
 
@@ -108,7 +127,7 @@ export default function RecipesPage() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-0 p-1 text-[9px] font-extrabold tracking-[0.1em] text-neutral-400 hover:text-neutral-900 transition-colors focus:outline-none cursor-pointer uppercase"
+                className="absolute right-0 p-1 text-[9px] font-extrabold tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors focus:outline-none cursor-pointer uppercase"
                 aria-label="Clear search"
               >
                 CLEAR
@@ -144,10 +163,14 @@ export default function RecipesPage() {
               Start building your premium culinary collection to plan customized menus effortlessly.
             </p>
             <Link
-              href="/chat"
-              className="bg-neutral-900 hover:bg-neutral-800 text-white px-8 py-3.5 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-neutral-900"
+              href={hasHitRecipeLimit ? "/settings?tab=billing" : "/chat"}
+              className={`px-8 py-3.5 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border ${
+                hasHitRecipeLimit 
+                  ? "bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs"
+                  : "bg-neutral-900 hover:bg-neutral-800 text-white border-neutral-900"
+              }`}
             >
-              CREATE VIA BOT
+              {hasHitRecipeLimit ? "UPGRADE TO CREATE &rarr;" : "CREATE VIA BOT"}
             </Link>
           </div>
         ) : (
@@ -172,34 +195,69 @@ export default function RecipesPage() {
           />
 
           <div className="relative z-10 w-full max-w-md bg-[#FAF9F6] border border-neutral-200 p-8 text-center rounded-none shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="mx-auto w-12 h-12 border border-neutral-300 text-neutral-800 flex items-center justify-center mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
-              </svg>
-            </div>
+            {hasHitRecipeLimit ? (
+              <>
+                <div className="mx-auto w-12 h-12 border border-rose-200 bg-rose-50 text-rose-600 flex items-center justify-center mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
 
-            <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-3">
-              Create a New Recipe
-            </h3>
+                <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-3">
+                  Recipe Limit Reached
+                </h3>
 
-            <p className="text-xs text-neutral-400 leading-relaxed mb-8 font-medium">
-              To curate or compose a custom recipe, initiate a dialogue with <span className="font-bold text-neutral-800">Chef Ferraro</span>. Direct the chef with your ingredients or scaling demands.
-            </p>
+                <p className="text-xs text-neutral-400 leading-relaxed mb-8 font-medium uppercase tracking-wider">
+                  You have reached your recipe generation limit. Upgrade to Pro to unlock unlimited recipe creation.
+                </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="order-2 sm:order-1 px-6 py-3 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-none transition-colors cursor-pointer"
-              >
-                CANCEL
-              </button>
-              <Link
-                href="/chat"
-                className="order-1 sm:order-2 bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center flex items-center justify-center gap-1.5 border border-neutral-900"
-              >
-                GO TO CHEF FERRARO &rarr;
-              </Link>
-            </div>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="order-2 sm:order-1 px-6 py-3 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-none transition-colors cursor-pointer"
+                  >
+                    CANCEL
+                  </button>
+                  <Link
+                    href="/settings?tab=billing"
+                    className="order-1 sm:order-2 bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center flex items-center justify-center gap-1.5 border border-rose-600 shadow-xs"
+                  >
+                    UPGRADE TO PRO &rarr;
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mx-auto w-12 h-12 border border-neutral-300 text-neutral-800 flex items-center justify-center mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z" />
+                  </svg>
+                </div>
+
+                <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-3">
+                  Create a New Recipe
+                </h3>
+
+                <p className="text-xs text-neutral-400 leading-relaxed mb-8 font-medium">
+                  To curate or compose a custom recipe, initiate a dialogue with <span className="font-bold text-neutral-800">Chef Ferraro</span>. Direct the chef with your ingredients or scaling demands.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="order-2 sm:order-1 px-6 py-3 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-none transition-colors cursor-pointer"
+                  >
+                    CANCEL
+                  </button>
+                  <Link
+                    href="/chat"
+                    className="order-1 sm:order-2 bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center flex items-center justify-center gap-1.5 border border-neutral-900"
+                  >
+                    GO TO CHEF FERRARO &rarr;
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -216,7 +274,7 @@ function RecipeCard({
 }) {
   return (
     <div className="bg-white border border-neutral-200/60 rounded-none flex flex-col h-full hover:border-neutral-900 transition-all duration-300 group shadow-xs">
-      <div className="relative aspect-[16/10] overflow-hidden rounded-none border-b border-neutral-100">
+      <div className="relative aspect-16/10 overflow-hidden rounded-none border-b border-neutral-100">
         <img
           src={recipe.imageUrl}
           alt={recipe.title}

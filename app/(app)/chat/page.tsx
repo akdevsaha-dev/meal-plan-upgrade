@@ -18,12 +18,14 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [rateLimitError, setRateLimitError] = useState<string | null>(null);
   const [recipes, setRecipes] = useState<Record<string, Recipe>>({});
+  const [usage, setUsage] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     if (token) {
+      // Fetch chat messages
       fetch("/api/chat", {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
@@ -43,6 +45,29 @@ export default function ChatPage() {
         })
         .catch((err) => {
           console.error("Failed to load chat history:", err);
+        });
+
+      // Fetch usage data to check limits
+      fetch("/api/usage", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && !data.error) {
+            setUsage(data);
+            const { usage: u, limits: l, plan } = data;
+            const upgradeMessage = " Upgrade to the Pro Plan to unlock higher limits and unlimited features.";
+            if (u.chatsMonth >= l.chatsPerMonth) {
+              setRateLimitError(`Monthly Chef Ferraro chat limit reached (${u.chatsMonth}/${l.chatsPerMonth}).${plan === "free" ? upgradeMessage : ""}`);
+            } else if (u.recipesToday >= l.recipesPerDay) {
+              setRateLimitError(`Daily recipe limit reached (${u.recipesToday}/${l.recipesPerDay}).${plan === "free" ? upgradeMessage : ""}`);
+            } else if (u.recipesMonth >= l.recipesPerMonth) {
+              setRateLimitError(`Monthly recipe limit reached (${u.recipesMonth}/${l.recipesPerMonth}).${plan === "free" ? upgradeMessage : ""}`);
+            }
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load usage data:", err);
         });
     }
   }, []);

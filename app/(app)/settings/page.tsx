@@ -23,11 +23,61 @@ interface User {
   hasProAccess?: boolean;
 }
 
+interface UsageData {
+  plan: "free" | "pro";
+  subscriptionStatus?: string | null;
+  currentPeriodEnd?: string | null;
+  cancelAtPeriodEnd?: boolean | null;
+  usage: {
+    recipesToday: number;
+    recipesMonth: number;
+    chatsMonth: number;
+    plannersWeek: number;
+  };
+  limits: {
+    recipesPerDay: number;
+    recipesPerMonth: number;
+    chatsMonth: number;
+    plannersWeek: number;
+  };
+}
+
 export default function SettingsPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"profile" | "billing" | "danger">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "billing" | "usage" | "danger">("profile");
+  const [usageData, setUsageData] = useState<UsageData | null>(null);
+
+  const fetchUsageData = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetch("/api/usage", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && !data.error) {
+            setUsageData(data);
+          }
+        })
+        .catch((err) => console.error("Failed to fetch usage data:", err));
+    }
+  };
+
+  useEffect(() => {
+    fetchUsageData();
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab === "billing" || tab === "profile" || tab === "usage" || tab === "danger") {
+        setActiveTab(tab);
+      }
+    }
+  }, []);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteInputText, setDeleteInputText] = useState("");
@@ -268,6 +318,15 @@ export default function SettingsPage() {
               Billing & Plan
             </button>
             <button
+              onClick={() => setActiveTab("usage")}
+              className={`flex-1 md:flex-initial text-left px-4 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer ${activeTab === "usage"
+                  ? "border-b-2 md:border-b-0 md:border-l-2 border-neutral-900 bg-neutral-900/5 text-neutral-900"
+                  : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-neutral-900 hover:bg-neutral-900/5"
+                }`}
+            >
+              Usage & Quotas
+            </button>
+            <button
               onClick={() => setActiveTab("danger")}
               className={`flex-1 md:flex-initial text-left px-4 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer ${activeTab === "danger"
                   ? "border-b-2 md:border-b-0 md:border-l-2 border-rose-600 bg-rose-50 text-rose-700"
@@ -467,6 +526,97 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {activeTab === "usage" && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div>
+                  <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.18em]">
+                    Usage & Quotas
+                  </h2>
+                  <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-[0.15em] mt-1.5">
+                    Track your plan limits and system usage
+                  </p>
+                </div>
+
+                {usageData ? (
+                  <div className="space-y-6">
+                    {/* Plan Info Card */}
+                    <div className="bg-white border border-neutral-200/60 rounded-xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div>
+                        <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-[0.25em]">Account Plan</span>
+                        <h3 className="text-base font-extrabold text-neutral-950 uppercase tracking-wider mt-1">
+                          {usageData.plan === "pro" ? "Pro Plan Access" : "Free Plan Account"}
+                        </h3>
+                      </div>
+                      <div className="sm:text-right">
+                        <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-[0.25em]">Billing Period / Renewal</span>
+                        <p className="text-xs font-bold text-neutral-800 mt-1 uppercase tracking-wider">
+                          {usageData.subscriptionStatus === "active" && usageData.currentPeriodEnd
+                            ? `${usageData.cancelAtPeriodEnd ? "Expires" : "Renews"} ${new Date(usageData.currentPeriodEnd).toLocaleDateString()}`
+                            : "No active subscription billing"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Progress Bars Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      
+                      {/* Recipes Today */}
+                      <QuotaProgressBar
+                        title="Recipes Created Today"
+                        value={usageData.usage.recipesToday}
+                        max={usageData.limits.recipesPerDay}
+                      />
+
+                      {/* Recipes Month */}
+                      <QuotaProgressBar
+                        title="Recipes Created This Month"
+                        value={usageData.usage.recipesMonth}
+                        max={usageData.limits.recipesPerMonth}
+                      />
+
+                      {/* Chats Month */}
+                      <QuotaProgressBar
+                        title="Chef Ferraro Chats This Month"
+                        value={usageData.usage.chatsMonth}
+                        max={usageData.limits.chatsMonth}
+                      />
+
+                      {/* Planners Week */}
+                      <QuotaProgressBar
+                        title="Meal Planners Created (7d)"
+                        value={usageData.usage.plannersWeek}
+                        max={usageData.limits.plannersWeek}
+                      />
+
+                    </div>
+
+                    {/* Upgrade CTA */}
+                    {usageData.plan === "free" && (
+                      <div className="border border-neutral-200/60 bg-white rounded-xl p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mt-4 shadow-xs">
+                        <div className="space-y-1.5">
+                          <h4 className="text-xs font-bold text-neutral-950 uppercase tracking-wider">Upgrade to Pro Access</h4>
+                          <p className="text-xs text-neutral-500 max-w-md leading-relaxed uppercase tracking-wider">
+                            Unlock unlimited chats with Chef Ferraro, unlimited weekly planner calendars, and expanded daily/monthly recipe limits.
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleUpgrade}
+                          className="bg-neutral-950 hover:bg-neutral-800 text-[#FAF9F6] px-6 py-3 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer border border-neutral-950 shrink-0"
+                        >
+                          Upgrade Plan
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="w-6 h-6 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="mt-3 text-[9px] font-bold text-neutral-400 tracking-[0.2em] uppercase">Calculating metrics...</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === "danger" && (
               <div className="space-y-8 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div>
@@ -657,6 +807,54 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function QuotaProgressBar({
+  title,
+  value,
+  max,
+}: {
+  title: string;
+  value: number;
+  max: number;
+}) {
+  const isInfinite = max === Infinity || max === null || max === undefined || (typeof max === "string" && (String(max).toLowerCase() === "infinity" || String(max).toLowerCase() === "infinite"));
+  const percentage = isInfinite ? 0 : Math.min(100, Math.round((value / max) * 100));
+  const remaining = isInfinite ? "Unlimited" : Math.max(0, max - value);
+  const isWarning = !isInfinite && percentage >= 85;
+
+  return (
+    <div className="bg-white border border-neutral-200/60 rounded-xl p-6 space-y-4 hover:border-neutral-400 transition-colors shadow-xs">
+      <div className="flex justify-between items-start gap-2">
+        <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-[0.2em]">
+          {title}
+        </span>
+        <span className="text-xs font-bold text-neutral-800 uppercase tracking-wider text-right whitespace-nowrap">
+          {value} / {isInfinite ? "∞" : max}
+        </span>
+      </div>
+
+      {!isInfinite && (
+        <div className="w-full bg-neutral-100 h-2.5 rounded-full overflow-hidden border border-neutral-200/30">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ease-out ${
+              isWarning ? "bg-rose-600 animate-pulse" : "bg-neutral-900"
+            }`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      )}
+
+      <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest pt-1">
+        <span className="text-neutral-400">
+          {isInfinite ? "Status" : "Remaining Quota"}
+        </span>
+        <span className={isWarning ? "text-rose-600" : "text-neutral-800"}>
+          {isInfinite ? "Unlimited" : `${remaining} Left`}
+        </span>
       </div>
     </div>
   );

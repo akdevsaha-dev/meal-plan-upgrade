@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getUserFromRequest, hasProAccess } from "@/lib/auth";
+import { getUserFromRequest } from "@/lib/auth";
+import { checkQuota } from "@/lib/quota";
 import { openaiClient, DEFAULT_MODEL } from "@/lib/ai";
 import { generateRecipeImage } from "@/lib/nanoBanana";
 import { withErrorHandler } from "@/lib/apiWrapper";
@@ -50,6 +51,14 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   }
 
   const userId = session.userId;
+  const chatQuota = await checkQuota(userId, "send_chat");
+  if (!chatQuota.allowed) {
+    return NextResponse.json(
+      { error: chatQuota.error },
+      { status: 403 }
+    );
+  }
+
   const rateLimitResult = await checkChatRateLimit(userId);
 
   if (!rateLimitResult.allowed) {
@@ -135,26 +144,13 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
   if (isRecipeRequest) {
     console.log(`[Recipe Intent Detected] Generating structured recipe for user ${userId}`);
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        subscriptionStatus: true,
-        currentPeriodEnd: true,
-      },
-    });
+    const recipeQuota = await checkQuota(userId, "create_recipe");
 
-    const isPro = user ? hasProAccess(user) : false;
-    const limit = isPro ? 200 : 10;
-
-    const recipeCount = await prisma.recipe.count({
-      where: { userId: userId },
-    });
-
-    if (recipeCount >= limit) {
+    if (!recipeQuota.allowed) {
       return NextResponse.json(
         {
-          error: `Recipe limit reached. You can only generate up to ${limit} recipes on your current plan. Upgrade to Pro for a higher limit.`,
-          limit,
+          error: recipeQuota.error,
+          limit: recipeQuota.limits.recipesPerDay,
           remaining: 0,
         },
         {
