@@ -79,26 +79,6 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     "X-RateLimit-Reset": String(rateLimitResult.resetAt),
   };
 
-  const isPro = user ? hasProAccess(user) : false;
-  const limit = isPro ? 200 : 10;
-
-  const recipeCount = await prisma.recipe.count({
-    where: { userId: userId },
-  });
-
-  if (recipeCount >= limit) {
-    return NextResponse.json(
-      {
-        error: `Recipe limit reached. You can only generate up to ${limit} recipes on your current plan. Upgrade to Pro for a higher limit.`,
-        limit,
-        remaining: 0,
-      },
-      {
-        status: 403,
-        headers: rateLimitHeaders,
-      }
-    );
-  }
   const { messages } = await req.json();
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "Invalid messages payload" }, { status: 400 });
@@ -162,6 +142,27 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
         currentPeriodEnd: true,
       },
     });
+
+    const isPro = user ? hasProAccess(user) : false;
+    const limit = isPro ? 200 : 10;
+
+    const recipeCount = await prisma.recipe.count({
+      where: { userId: userId },
+    });
+
+    if (recipeCount >= limit) {
+      return NextResponse.json(
+        {
+          error: `Recipe limit reached. You can only generate up to ${limit} recipes on your current plan. Upgrade to Pro for a higher limit.`,
+          limit,
+          remaining: 0,
+        },
+        {
+          status: 403,
+          headers: rateLimitHeaders,
+        }
+      );
+    }
 
     try {
       const { output: recipe } = await generateText({
