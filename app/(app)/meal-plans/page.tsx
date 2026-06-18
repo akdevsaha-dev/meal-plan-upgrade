@@ -123,7 +123,7 @@ export default function MealPlansPage() {
 
   return (
     <div className={`${montserrat.variable} font-sans min-h-screen bg-[#FAF9F6] text-[#111111]`}>
-      <div className="mx-auto max-w-7xl px-6 sm:px-12 md:px-16 lg:px-24 pt-4 lg:pt-6 pb-12 lg:pb-16">
+      <div className="mx-auto max-w-[1600px] px-6 sm:px-12 md:px-16 lg:px-20 pt-4 lg:pt-6 pb-12 lg:pb-16">
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-neutral-900/10 pb-4 mb-8 gap-4">
@@ -137,7 +137,7 @@ export default function MealPlansPage() {
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="rounded-none bg-neutral-900 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 cursor-pointer self-start sm:self-center border border-neutral-900"
+            className="rounded-lg bg-neutral-900 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 cursor-pointer self-start sm:self-center border border-neutral-900 shadow-xs hover:shadow-md"
           >
             + CREATE NEW PLAN
           </button>
@@ -150,8 +150,8 @@ export default function MealPlansPage() {
             <p className="mt-4 text-[10px] font-bold text-neutral-400 tracking-[0.2em] uppercase">ACCESSING CATER ARCHIVES...</p>
           </div>
         ) : mealPlans.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 px-6 bg-white border border-neutral-200 rounded-none text-center max-w-xl mx-auto shadow-xs">
-            <div className="w-12 h-12 rounded-none border border-neutral-300 text-neutral-800 flex items-center justify-center mb-6">
+          <div className="flex flex-col items-center justify-center py-20 px-6 bg-white border border-neutral-200 rounded-xl text-center max-w-xl mx-auto shadow-sm">
+            <div className="w-12 h-12 rounded-full border border-neutral-300 text-neutral-800 flex items-center justify-center mb-6">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75" />
               </svg>
@@ -162,7 +162,7 @@ export default function MealPlansPage() {
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-neutral-900 hover:bg-neutral-800 text-white px-8 py-3.5 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-neutral-900 cursor-pointer"
+              className="bg-neutral-900 hover:bg-neutral-800 text-white px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-neutral-900 cursor-pointer shadow-xs hover:shadow-md"
             >
               CREATE YOUR FIRST PLAN
             </button>
@@ -172,7 +172,7 @@ export default function MealPlansPage() {
             {mealPlans.map((plan) => (
               <div
                 key={plan.id}
-                className="bg-white border border-neutral-200/60 rounded-none flex flex-col h-full hover:border-neutral-900 transition-all duration-300 group shadow-xs"
+                className="bg-white border border-neutral-200/60 rounded-xl flex flex-col h-full hover:border-neutral-900 transition-all duration-300 group shadow-sm hover:shadow-md"
               >
                 <div className="p-8 flex flex-col grow text-left justify-between">
                   <div>
@@ -191,7 +191,7 @@ export default function MealPlansPage() {
                           <span>{formatDate(plan.startDate)} – {formatDate(plan.endDate)}</span>
                         </div>
                       </div>
-                      <span className="shrink-0 text-[9px] font-extrabold text-[#A94420] tracking-[0.2em] bg-[#A94420]/5 px-3 py-1.5 border border-[#A94420]/15 uppercase">
+                      <span className="shrink-0 text-[9px] font-extrabold text-[#A94420] tracking-[0.2em] bg-[#A94420]/5 px-3 py-1.5 border border-[#A94420]/15 rounded-md uppercase">
                         {plan.recipes ? plan.recipes.length : 0} MEALS
                       </span>
                     </div>
@@ -206,7 +206,7 @@ export default function MealPlansPage() {
                           {plan.recipes.slice(0, 5).map((r) => (
                             <div
                               key={r.id}
-                              className="relative group/thumb w-12 h-12 border border-neutral-200 overflow-hidden bg-neutral-50"
+                              className="relative group/thumb w-12 h-12 border border-neutral-200 rounded-md overflow-hidden bg-neutral-50"
                               title={`${r.day.toUpperCase()} • ${r.mealType.toUpperCase()} — ${r.recipe.title}`}
                             >
                               <img
@@ -217,14 +217,14 @@ export default function MealPlansPage() {
                             </div>
                           ))}
                           {plan.recipes.length > 5 && (
-                            <div className="w-12 h-12 border border-dashed border-neutral-300 flex items-center justify-center text-[10px] font-bold text-neutral-400 bg-neutral-50/50">
+                            <div className="w-12 h-12 border border-dashed border-neutral-300 rounded-md flex items-center justify-center text-[10px] font-bold text-neutral-400 bg-neutral-50/50">
                               +{plan.recipes.length - 5}
                             </div>
                           )}
                         </div>
                       </div>
                     ) : (
-                      <div className="my-8 border border-dashed border-neutral-200 p-4 text-center text-[10px] text-neutral-400 font-bold tracking-[0.15em] bg-neutral-50/50 uppercase">
+                      <div className="my-8 border border-dashed border-neutral-200 rounded-lg p-4 text-center text-[10px] text-neutral-400 font-bold tracking-[0.15em] bg-neutral-50/50 uppercase">
                         No meals scheduled yet
                       </div>
                     )}
@@ -257,7 +257,7 @@ export default function MealPlansPage() {
           <form
             onSubmit={handleCreateMealPlan}
             method="POST"
-            className="relative z-10 w-full max-w-md bg-[#FAF9F6] border border-neutral-200 p-8 text-center rounded-none shadow-2xl animate-in fade-in zoom-in-95 duration-200 space-y-6"
+            className="relative z-10 w-full max-w-md bg-[#FAF9F6] border border-neutral-200 p-8 text-center rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 space-y-6"
           >
             <div>
               <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-2">
@@ -322,14 +322,14 @@ export default function MealPlansPage() {
                 type="button"
                 onClick={() => setIsModalOpen(false)}
                 disabled={isSubmitting}
-                className="order-2 sm:order-1 px-6 py-3.5 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-none transition-colors cursor-pointer disabled:opacity-50"
+                className="order-2 sm:order-1 px-6 py-3.5 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-lg transition-colors cursor-pointer disabled:opacity-50"
               >
                 CANCEL
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="order-1 sm:order-2 bg-neutral-900 hover:bg-neutral-800 text-white px-8 py-3.5 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-neutral-900 disabled:opacity-50 cursor-pointer"
+                className="order-1 sm:order-2 bg-neutral-900 hover:bg-neutral-800 text-white px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-neutral-900 disabled:opacity-50 cursor-pointer shadow-xs"
               >
                 {isSubmitting ? "CREATING..." : "CREATE PLAN"}
               </button>
