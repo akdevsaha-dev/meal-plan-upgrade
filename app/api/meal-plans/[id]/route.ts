@@ -58,10 +58,18 @@ export const POST = withErrorHandler(async (
   const body = await req.json();
   let recipeId = body.recipeId;
 
-  if (!recipeId) {
-    const firstRecipe = await prisma.recipe.findFirst({ orderBy: { createdAt: "asc" } });
+  if (recipeId) {
+    const recipe = await prisma.recipe.findUnique({ where: { id: recipeId } });
+    if (!recipe || recipe.userId !== session.userId) {
+      return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
+    }
+  } else {
+    const firstRecipe = await prisma.recipe.findFirst({
+      where: { userId: session.userId },
+      orderBy: { createdAt: "asc" },
+    });
     if (!firstRecipe) {
-      return NextResponse.json({ error: "No recipes found in system" }, { status: 400 });
+      return NextResponse.json({ error: "No recipes found for this user" }, { status: 400 });
     }
     recipeId = firstRecipe.id;
   }

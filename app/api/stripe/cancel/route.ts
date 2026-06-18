@@ -47,10 +47,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     cancel_at_period_end: true,
   }) as Stripe.Subscription;
 
-  const firstItem = subscription.items.data[0];
-  const currentPeriodEnd = firstItem
-    ? new Date(firstItem.current_period_end * 1000)
-    : new Date();
+  const subAny = subscription as any;
+  const firstItem = subscription.items?.data?.[0];
+  const periodEndSecs = subAny.current_period_end ?? (firstItem ? (firstItem as any).current_period_end : undefined);
+  const currentPeriodEnd = periodEndSecs ? new Date(periodEndSecs * 1000) : new Date();
 
   await prisma.user.update({
     where: { id: session.userId },

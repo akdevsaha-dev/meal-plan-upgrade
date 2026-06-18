@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Montserrat } from "next/font/google";
+import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -16,6 +17,34 @@ const montserrat = Montserrat({
 export default function Upgrade() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  const handleFreeRedirect = () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (token) {
+      router.push("/recipes");
+    } else {
+      router.push("/register");
+    }
+  };
+
+  const handleGalleryRedirect = () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (token) {
+      router.push("/recipes");
+    } else {
+      router.push("/login");
+    }
+  };
+
+  const handleProRedirect = () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (token) {
+      router.push("/settings");
+    } else {
+      router.push("/register?plan=pro");
+    }
+  };
 
   useEffect(() => {
     if (gridRef.current) {
@@ -74,17 +103,20 @@ export default function Upgrade() {
             </div>
 
             <div className="relative z-10 flex flex-col items-center justify-end w-full">
-              <div className="flex items-center gap-3 cursor-pointer">
-                <span className="text-[10px] sm:text-xs font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover:opacity-75">
+              <button
+                onClick={handleFreeRedirect}
+                className="flex items-center gap-3 cursor-pointer bg-transparent border-none text-white focus:outline-none group/btn"
+              >
+                <span className="text-[10px] sm:text-xs font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover/btn:opacity-75">
                   TRY FREE PLAN
                 </span>
-                <div className="w-7 h-7 rounded-full border border-white/30 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-black">
+                <div className="w-7 h-7 rounded-full border border-white/30 flex items-center justify-center transition-all duration-300 group-hover/btn:bg-white group-hover/btn:text-black">
                   <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
                   </svg>
                 </div>
-              </div>
+              </button>
             </div>
           </div>
 
@@ -109,17 +141,20 @@ export default function Upgrade() {
             </div>
 
             <div className="relative z-10 flex flex-col items-center justify-end w-full">
-              <div className="flex items-center gap-3 cursor-pointer">
-                <span className="text-[10px] sm:text-xs font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover:opacity-75">
+              <button
+                onClick={handleGalleryRedirect}
+                className="flex items-center gap-3 cursor-pointer bg-transparent border-none text-white focus:outline-none group/btn"
+              >
+                <span className="text-[10px] sm:text-xs font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover/btn:opacity-75">
                   EXPLORE GALLERY
                 </span>
-                <div className="w-7 h-7 rounded-full border border-white/30 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-black">
+                <div className="w-7 h-7 rounded-full border border-white/30 flex items-center justify-center transition-all duration-300 group-hover/btn:bg-white group-hover/btn:text-black">
                   <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
                   </svg>
                 </div>
-              </div>
+              </button>
             </div>
           </div>
 
@@ -148,17 +183,20 @@ export default function Upgrade() {
             </div>
 
             <div className="relative z-10 flex flex-col items-center justify-end w-full">
-              <div className="flex items-center gap-3 cursor-pointer">
-                <span className="text-[10px] sm:text-xs font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover:opacity-75">
+              <button
+                onClick={handleProRedirect}
+                className="flex items-center gap-3 cursor-pointer bg-transparent border-none text-white focus:outline-none group/btn"
+              >
+                <span className="text-[10px] sm:text-xs font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover/btn:opacity-75">
                   TRY PRO PLAN
                 </span>
-                <div className="w-7 h-7 rounded-full border border-white/30 flex items-center justify-center transition-all duration-300 group-hover:bg-white group-hover:text-black">
+                <div className="w-7 h-7 rounded-full border border-white/30 flex items-center justify-center transition-all duration-300 group-hover/btn:bg-white group-hover/btn:text-black">
                   <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
                   </svg>
                 </div>
-              </div>
+              </button>
             </div>
           </div>
         </div>

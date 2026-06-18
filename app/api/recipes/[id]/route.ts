@@ -26,6 +26,10 @@ export const GET = withErrorHandler(async (
     return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
   }
 
+  if (recipe.userId !== session.userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   return NextResponse.json({ recipe });
 });
 

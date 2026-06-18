@@ -105,10 +105,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
 
     if (subscriptionId) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId) as Stripe.Subscription;
-      const firstItem = subscription.items.data[0];
-      const currentPeriodEnd = firstItem
-        ? new Date(firstItem.current_period_end * 1000)
-        : new Date();
+      const subAny = subscription as any;
+      const firstItem = subscription.items?.data?.[0];
+      const periodEndSecs = subAny.current_period_end ?? (firstItem ? (firstItem as any).current_period_end : undefined);
+      const currentPeriodEnd = periodEndSecs ? new Date(periodEndSecs * 1000) : new Date();
       await syncSubscription(
         subscription.id,
         subscription.status,
@@ -128,10 +128,10 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     const customerId = subscription.customer ? String(subscription.customer) : null;
     const status = subscription.status;
     const userId = subscription.metadata?.userId;
-    const firstItem = subscription.items.data[0];
-    const currentPeriodEnd = firstItem
-      ? new Date(firstItem.current_period_end * 1000)
-      : new Date();
+    const subAny = subscription as any;
+    const firstItem = subscription.items?.data?.[0];
+    const periodEndSecs = subAny.current_period_end ?? (firstItem ? (firstItem as any).current_period_end : undefined);
+    const currentPeriodEnd = periodEndSecs ? new Date(periodEndSecs * 1000) : new Date();
     const cancelAtPeriodEnd = subscription.cancel_at_period_end;
 
     await syncSubscription(
