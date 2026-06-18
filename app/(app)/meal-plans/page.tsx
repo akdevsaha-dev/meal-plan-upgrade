@@ -1,9 +1,14 @@
 "use client";
 
-import ChefLogo from "@/app/components/ChefLogo";
-import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { Montserrat } from "next/font/google";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-montserrat",
+});
 
 function getTodayString() {
   const d = new Date();
@@ -40,6 +45,7 @@ interface MealPlan {
 
 export default function MealPlansPage() {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState("");
@@ -53,6 +59,7 @@ export default function MealPlansPage() {
 
   async function fetchPlans() {
     const token = localStorage.getItem("token");
+    setIsLoading(true);
     try {
       const res = await fetch("/api/meal-plans", {
         headers: { Authorization: `Bearer ${token}` },
@@ -61,6 +68,8 @@ export default function MealPlansPage() {
       setMealPlans(data.mealPlans || []);
     } catch (err) {
       console.error("Failed to fetch meal plans:", err);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -113,167 +122,221 @@ export default function MealPlansPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-linear-to-b from-white to-gray-50/70 font-sans text-gray-900">
-      <div
-        className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-70 pointer-events-none"
-        aria-hidden="true"
-      />
-      <CookingGifBackdrop position="absolute" stackClass="z-[1]" />
-
-      <div className="relative z-10 p-6 lg:p-12 max-w-5xl mx-auto">
-
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pb-8 mb-10 border-b border-gray-100">
+    <div className={`${montserrat.variable} font-sans min-h-screen bg-[#FAF9F6] text-[#111111]`}>
+      <div className="mx-auto max-w-7xl px-6 sm:px-12 md:px-16 lg:px-24 pt-4 lg:pt-6 pb-12 lg:pb-16">
+        
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-neutral-900/10 pb-4 mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 tracking-tight">
-              <ChefLogo size={36} />
-              Meal Plans
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-[0.25em] uppercase text-neutral-900">
+              MEAL PLANS
             </h1>
-            <p className="text-sm font-semibold text-gray-600 mt-2 leading-relaxed">
-              Create and track your weekly meal schedules.
+            <p className="text-[10px] font-bold text-neutral-400 tracking-[0.2em] uppercase mt-2">
+              Curated Weekly Schedules & Culinary Agendas
             </p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="self-start sm:self-center bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+            className="rounded-none bg-neutral-900 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 cursor-pointer self-start sm:self-center border border-neutral-900"
           >
-            Create New Plan
+            + CREATE NEW PLAN
           </button>
         </div>
 
-        {mealPlans.length === 0 && (
-          <div className="bg-white border border-gray-100 rounded-3xl p-12 text-center shadow-xs max-w-md mx-auto mt-12">
-            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mx-auto mb-4 border border-orange-100">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+        {/* Loader state */}
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-24">
+            <div className="w-8 h-8 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-[10px] font-bold text-neutral-400 tracking-[0.2em] uppercase">ACCESSING CATER ARCHIVES...</p>
+          </div>
+        ) : mealPlans.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-6 bg-white border border-neutral-200 rounded-none text-center max-w-xl mx-auto shadow-xs">
+            <div className="w-12 h-12 rounded-none border border-neutral-300 text-neutral-800 flex items-center justify-center mb-6">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75" />
               </svg>
             </div>
-            <h3 className="text-base font-bold text-gray-800 mb-1">No meal plans found</h3>
-            <p className="text-sm text-gray-400 mb-6 font-medium">Get started by setting up a fresh meal schedule for the week.</p>
+            <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.2em] mb-2">No Meal Plans Found</h2>
+            <p className="text-xs text-neutral-400 leading-relaxed max-w-sm mb-8 font-medium">
+              Start organizing your culinary calendar. Establish a custom meal plan schedule to begin.
+            </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs cursor-pointer"
+              className="bg-neutral-900 hover:bg-neutral-800 text-white px-8 py-3.5 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-neutral-900 cursor-pointer"
             >
-              Create Your First Plan
+              CREATE YOUR FIRST PLAN
             </button>
           </div>
-        )}
-
-        {mealPlans.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {mealPlans.map((plan) => (
-              <Link
+              <div
                 key={plan.id}
-                href={`/meal-plans/${plan.id}`}
-                className="group bg-white border border-gray-100 hover:border-gray-200/80 p-6 rounded-3xl shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 flex flex-col justify-between"
+                className="bg-white border border-neutral-200/60 rounded-none flex flex-col h-full hover:border-neutral-900 transition-all duration-300 group shadow-xs"
               >
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors duration-150">
-                    {plan.name}
-                  </h2>
-                  <div className="flex items-center gap-2 mt-2 text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor" className="w-3.5 h-3.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
-                    </svg>
-                    <span>{formatDate(plan.startDate)} – {formatDate(plan.endDate)}</span>
+                <div className="p-8 flex flex-col grow text-left justify-between">
+                  <div>
+                    {/* Card Top / Header */}
+                    <div className="flex justify-between items-start gap-4 mb-6">
+                      <div>
+                        <Link href={`/meal-plans/${plan.id}`}>
+                          <h3 className="text-base font-bold text-neutral-900 hover:text-neutral-500 tracking-wider transition-colors uppercase line-clamp-1">
+                            {plan.name}
+                          </h3>
+                        </Link>
+                        <div className="flex items-center gap-1.5 mt-2 text-[10px] text-neutral-400 font-bold uppercase tracking-[0.15em]">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75" />
+                          </svg>
+                          <span>{formatDate(plan.startDate)} – {formatDate(plan.endDate)}</span>
+                        </div>
+                      </div>
+                      <span className="shrink-0 text-[9px] font-extrabold text-[#A94420] tracking-[0.2em] bg-[#A94420]/5 px-3 py-1.5 border border-[#A94420]/15 uppercase">
+                        {plan.recipes ? plan.recipes.length : 0} MEALS
+                      </span>
+                    </div>
+
+                    {/* Previews / Thumbnails Stack */}
+                    {plan.recipes && plan.recipes.length > 0 ? (
+                      <div className="mt-4 mb-6">
+                        <div className="text-[9px] font-bold text-neutral-400 tracking-[0.2em] uppercase mb-3">
+                          Scheduled Previews:
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {plan.recipes.slice(0, 5).map((r) => (
+                            <div
+                              key={r.id}
+                              className="relative group/thumb w-12 h-12 border border-neutral-200 overflow-hidden bg-neutral-50"
+                              title={`${r.day.toUpperCase()} • ${r.mealType.toUpperCase()} — ${r.recipe.title}`}
+                            >
+                              <img
+                                src={r.recipe.imageUrl || "/images/recipes/classic-pancakes.jpg"}
+                                alt={r.recipe.title}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-110"
+                              />
+                            </div>
+                          ))}
+                          {plan.recipes.length > 5 && (
+                            <div className="w-12 h-12 border border-dashed border-neutral-300 flex items-center justify-center text-[10px] font-bold text-neutral-400 bg-neutral-50/50">
+                              +{plan.recipes.length - 5}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="my-8 border border-dashed border-neutral-200 p-4 text-center text-[10px] text-neutral-400 font-bold tracking-[0.15em] bg-neutral-50/50 uppercase">
+                        No meals scheduled yet
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Footer / Actions */}
+                  <div className="border-t border-neutral-100 pt-6 mt-4 flex items-center justify-between">
+                    <Link
+                      href={`/meal-plans/${plan.id}`}
+                      className="text-[10px] font-bold tracking-[0.25em] text-neutral-900 hover:text-neutral-500 uppercase flex items-center gap-1.5 transition-colors group-hover:translate-x-1 duration-300"
+                    >
+                      VIEW DETAILS &rarr;
+                    </Link>
                   </div>
                 </div>
-                <div className="mt-6 border-t border-gray-50 pt-4 flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 font-bold bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                    {plan.recipes ? plan.recipes.length : 0} Meals Planned
-                  </span>
-                  <span className="text-xs font-bold text-gray-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all duration-150 flex items-center gap-0.5">
-                    View details
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                    </svg>
-                  </span>
-                </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
+      </div>
 
-        {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div
-              className="absolute inset-0 bg-gray-950/20 backdrop-blur-xs transition-opacity"
-              onClick={() => !isSubmitting && setIsModalOpen(false)}
-            />
+      {/* Elegant Modal for Create Meal Plan */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-neutral-950/40 backdrop-blur-xs transition-opacity duration-300"
+            onClick={() => !isSubmitting && setIsModalOpen(false)}
+          />
 
-            <form
-              onSubmit={handleCreateMealPlan}
-              method="POST"
-              className="relative bg-white rounded-2xl shadow-xl border border-gray-100 max-w-sm w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150 ease-out z-10"
-            >
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Create Meal Plan</h3>
-                <p className="text-xs text-gray-400 font-semibold mt-0.5">Set up a new plan template for details additions.</p>
+          <form
+            onSubmit={handleCreateMealPlan}
+            method="POST"
+            className="relative z-10 w-full max-w-md bg-[#FAF9F6] border border-neutral-200 p-8 text-center rounded-none shadow-2xl animate-in fade-in zoom-in-95 duration-200 space-y-6"
+          >
+            <div>
+              <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-2">
+                Create a New Meal Plan
+              </h3>
+              <p className="text-xs text-neutral-400 leading-relaxed font-medium">
+                Set up a new scheduling timeline to add recipes and custom daily menus.
+              </p>
+            </div>
+
+            <div className="space-y-6 text-left py-2">
+              <div className="flex flex-col border-b border-neutral-300 py-1 focus-within:border-neutral-900 transition-colors">
+                <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1">
+                  PLAN NAME
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="E.G. WEEKLY HARVEST"
+                  className="w-full bg-transparent text-xs font-semibold text-neutral-900 placeholder-neutral-300 uppercase tracking-widest focus:outline-none py-1.5"
+                />
               </div>
 
-              <div className="space-y-4 pt-2">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Plan Name</label>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex flex-col border-b border-neutral-300 py-1 focus-within:border-neutral-900 transition-colors">
+                  <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1">
+                    START DATE
+                  </label>
                   <input
-                    type="text"
+                    type="date"
                     required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Weekly Plan Name"
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 placeholder-gray-400 focus:outline-none focus:border-orange-500 transition-colors"
+                    value={startDate}
+                    min={getTodayString()}
+                    onChange={(e) => {
+                      const newStart = e.target.value;
+                      setStartDate(newStart);
+                      setEndDate(getFutureDateString(newStart, 7));
+                    }}
+                    className="w-full bg-transparent text-xs font-semibold text-neutral-900 focus:outline-none py-1.5"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Start Date</label>
-                    <input
-                      type="date"
-                      required
-                      value={startDate}
-                      min={getTodayString()}
-                      onChange={(e) => {
-                        const newStart = e.target.value;
-                        setStartDate(newStart);
-                        setEndDate(getFutureDateString(newStart, 7));
-                      }}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:outline-none focus:border-orange-500 transition-colors"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">End Date</label>
-                    <input
-                      type="date"
-                      required
-                      disabled
-                      value={endDate}
-                      className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-gray-400 cursor-not-allowed focus:outline-none"
-                    />
-                  </div>
+                <div className="flex flex-col border-b border-neutral-300 py-1 opacity-70">
+                  <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1">
+                    END DATE
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    disabled
+                    value={endDate}
+                    className="w-full bg-transparent text-xs font-semibold text-neutral-400 focus:outline-none py-1.5 cursor-not-allowed"
+                  />
                 </div>
               </div>
+            </div>
 
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 bg-gray-900 hover:bg-gray-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs hover:shadow-md transition-all cursor-pointer disabled:opacity-50"
-                >
-                  {isSubmitting ? "Creating..." : "Create Plan"}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-      </div>
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 justify-center">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                disabled={isSubmitting}
+                className="order-2 sm:order-1 px-6 py-3.5 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-none transition-colors cursor-pointer disabled:opacity-50"
+              >
+                CANCEL
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="order-1 sm:order-2 bg-neutral-900 hover:bg-neutral-800 text-white px-8 py-3.5 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-neutral-900 disabled:opacity-50 cursor-pointer"
+              >
+                {isSubmitting ? "CREATING..." : "CREATE PLAN"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

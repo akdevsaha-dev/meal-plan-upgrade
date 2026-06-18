@@ -1,9 +1,14 @@
 "use client";
 
-import ChefLogo from "@/app/components/ChefLogo";
-import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
+import { Montserrat } from "next/font/google";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-montserrat",
+});
 
 interface MealPlanRecipe {
   id: string;
@@ -138,6 +143,12 @@ export default function MealPlanDetailPage({
     }
   }
 
+  const handleOpenAddPanelForSlot = (day: string, mealType: string) => {
+    setSelectedDay(day);
+    setSelectedMealType(mealType);
+    setIsAddPanelOpen(true);
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", {
       month: "short",
@@ -148,180 +159,199 @@ export default function MealPlanDetailPage({
 
   if (!mealPlan) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center bg-[#FAF9F6]">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-900 border-t-transparent"></div>
-          <p className="text-gray-400 text-xs font-semibold">Loading planner...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-900 border-t-transparent"></div>
+          <p className="text-neutral-400 text-[10px] font-bold tracking-[0.2em] uppercase">Loading planner...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-linear-to-b from-white to-gray-50/70 font-sans text-gray-900">
-      <div
-        className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] bg-size-[16px_16px] opacity-70 pointer-events-none"
-        aria-hidden="true"
-      />
-      <CookingGifBackdrop position="absolute" stackClass="z-[1]" />
+    <div className={`${montserrat.variable} font-sans min-h-screen bg-[#FAF9F6] text-[#111111]`}>
+      <div className="mx-auto max-w-7xl px-6 sm:px-12 md:px-16 lg:px-24 pt-4 lg:pt-6 pb-12 lg:pb-16">
 
-      <div className="relative z-10 p-6 lg:p-12 max-w-7xl mx-auto">
-
-        <div className="flex items-center gap-2 text-xs font-bold text-gray-400 mb-2">
-          <Link href="/meal-plans" className="hover:text-orange-600 transition-colors uppercase tracking-wider">
-            Meal Plans
+        {/* Navigation Breadcrumb */}
+        <div className="flex items-center gap-2 text-[10px] font-bold text-neutral-400 mb-6 uppercase tracking-[0.2em]">
+          <Link href="/meal-plans" className="hover:text-neutral-950 transition-colors">
+            MEAL PLANS
           </Link>
-          <span className="text-gray-300">/</span>
-          <span className="text-gray-600 uppercase tracking-wider">{mealPlan.name}</span>
+          <span className="text-neutral-300">/</span>
+          <span className="text-neutral-900">{mealPlan.name}</span>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-gray-100 mb-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-neutral-900/10 mb-8">
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-[0.2em] uppercase text-neutral-900">
               {mealPlan.name}
             </h1>
-            <p className="text-sm font-semibold text-gray-500 mt-2">
+            <p className="text-[10px] font-bold text-[#A94420] tracking-[0.2em] uppercase mt-2">
               {formatDate(mealPlan.startDate)} – {formatDate(mealPlan.endDate)}
             </p>
           </div>
           <button
             onClick={() => setIsAddPanelOpen(!isAddPanelOpen)}
-            className="self-start md:self-center bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex items-center gap-2"
+            className="rounded-none bg-neutral-900 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3.5 text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 cursor-pointer self-start md:self-center border border-neutral-900 flex items-center gap-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            Add Recipe
+            ADD RECIPE
           </button>
         </div>
 
+        {/* Dropdown Add Meal Panel */}
         {isAddPanelOpen && (
           <form
             onSubmit={handleAddRecipe}
             method="POST"
-            className="bg-white border border-gray-100 rounded-3xl p-6 shadow-md mb-8 animate-in slide-in-from-top-4 duration-200 ease-out space-y-4 max-w-4xl"
+            className="bg-white border border-neutral-200 p-6 md:p-8 rounded-none mb-8 animate-in slide-in-from-top-4 duration-200 ease-out space-y-6"
           >
             <div>
-              <h3 className="text-base font-bold text-gray-900">Add Recipe to Plan</h3>
-              <p className="text-xs text-gray-400 font-semibold mt-0.5">Select a recipe, day of the week, and type of meal.</p>
+              <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-1">
+                Add Recipe to Plan
+              </h3>
+              <p className="text-[10px] font-bold text-neutral-450 uppercase tracking-[0.15em]">
+                Select the day, meal category, and target culinary masterpiece.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Day of Week</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col border-b border-neutral-300 py-1 focus-within:border-neutral-900 transition-colors">
+                <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1">
+                  DAY OF THE WEEK
+                </label>
                 <select
                   value={selectedDay}
                   onChange={(e) => setSelectedDay(e.target.value)}
-                  className="w-full border border-gray-200 bg-gray-50/50 p-2.5 text-xs font-semibold rounded-xl focus:outline-none focus:border-orange-500 transition-colors"
+                  className="w-full bg-transparent text-xs font-semibold text-neutral-900 focus:outline-none py-1.5 uppercase tracking-wider cursor-pointer"
                 >
                   {DAYS.map((d) => (
                     <option key={d} value={d}>
-                      {d.charAt(0).toUpperCase() + d.slice(1)}
+                      {d.toUpperCase()}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Meal Category</label>
+              <div className="flex flex-col border-b border-neutral-300 py-1 focus-within:border-neutral-900 transition-colors">
+                <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1">
+                  MEAL CATEGORY
+                </label>
                 <select
                   value={selectedMealType}
                   onChange={(e) => setSelectedMealType(e.target.value)}
-                  className="w-full border border-gray-200 bg-gray-50/50 p-2.5 text-xs font-semibold rounded-xl focus:outline-none focus:border-orange-500 transition-colors"
+                  className="w-full bg-transparent text-xs font-semibold text-neutral-900 focus:outline-none py-1.5 uppercase tracking-wider cursor-pointer"
                 >
                   {MEAL_TYPES.map((m) => (
                     <option key={m} value={m}>
-                      {m.charAt(0).toUpperCase() + m.slice(1)}
+                      {m.toUpperCase()}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Choose Recipe</label>
+              <div className="flex flex-col border-b border-neutral-300 py-1 focus-within:border-neutral-900 transition-colors">
+                <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1">
+                  CHOOSE RECIPE
+                </label>
                 <select
                   value={selectedRecipeId}
                   onChange={(e) => setSelectedRecipeId(e.target.value)}
-                  className="w-full border border-gray-200 bg-gray-50/50 p-2.5 text-xs font-semibold rounded-xl focus:outline-none focus:border-orange-500 transition-colors"
+                  className="w-full bg-transparent text-xs font-semibold text-neutral-900 focus:outline-none py-1.5 uppercase tracking-wider cursor-pointer"
                 >
                   {recipes.map((r) => (
                     <option key={r.id} value={r.id}>
-                      {r.title}
+                      {r.title.toUpperCase()}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setIsAddPanelOpen(false)}
-                className="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-bold transition-colors cursor-pointer"
+                className="px-6 py-3 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-none transition-colors cursor-pointer"
               >
-                Cancel
+                CANCEL
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-xs hover:shadow-sm cursor-pointer transition-all disabled:opacity-50"
+                className="bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-neutral-900 cursor-pointer disabled:opacity-50"
               >
-                {isSubmitting ? "Adding..." : "Add to Plan"}
+                {isSubmitting ? "ADDING..." : "ADD TO PLAN"}
               </button>
             </div>
           </form>
         )}
+
+        {/* Weekly Grid Planner Spread */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
           {DAYS.map((day) => (
-            <div key={day} className="bg-white border border-gray-100 p-4 rounded-2xl shadow-xs h-fit space-y-4 flex flex-col">
-              <h3 className="text-sm font-bold text-gray-900 border-b border-gray-50 pb-2 capitalize tracking-tight">
+            <div
+              key={day}
+              className="bg-white border border-neutral-200/60 p-4 rounded-none h-fit space-y-5 flex flex-col hover:border-neutral-900 transition-all duration-300 shadow-xs"
+            >
+              <h3 className="text-xs font-extrabold text-neutral-900 border-b border-neutral-100 pb-2 uppercase tracking-[0.2em]">
                 {day}
               </h3>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {MEAL_TYPES.map((meal) => {
                   const items = mealPlan.recipes.filter(
                     (r) => r.day === day && r.mealType === meal
                   );
                   return (
-                    <div key={meal} className="space-y-1.5">
-                      <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider block">
+                    <div key={meal} className="space-y-2">
+                      <span className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.25em] block mb-1">
                         {meal}
                       </span>
 
                       {items.length === 0 ? (
-                        <div className="border border-dashed border-gray-100 rounded-xl bg-gray-50/30 py-3 text-center text-[10px] text-gray-300 font-medium italic">
-                          No meal
+                        <div
+                          onClick={() => handleOpenAddPanelForSlot(day, meal)}
+                          className="border border-dashed border-neutral-200 hover:border-neutral-400 hover:bg-neutral-50/50 rounded-none py-4 text-center text-[9px] text-neutral-300 hover:text-neutral-500 font-bold uppercase tracking-[0.15em] cursor-pointer transition-all duration-200"
+                        >
+                          + ADD MEAL
                         </div>
                       ) : (
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           {items.map((item) => (
                             <div
                               key={item.id}
-                              className="group/item flex items-center justify-between gap-1.5 bg-gray-50/70 border border-gray-100 rounded-xl p-1.5 hover:bg-white hover:border-gray-200 transition-all shadow-xs"
+                              className="group/item flex flex-col bg-white border border-neutral-200 rounded-none overflow-hidden hover:border-neutral-900 transition-all duration-300 shadow-2xs relative"
                             >
-                              <div className="flex items-center gap-1.5 min-w-0">
+                              {/* Image header with hover controls */}
+                              <div className="relative aspect-16/10 w-full overflow-hidden border-b border-neutral-100 bg-neutral-50">
                                 <img
                                   src={item.recipe.imageUrl || "/images/recipes/classic-pancakes.jpg"}
-                                  alt=""
-                                  className="w-7 h-7 rounded-lg object-cover shrink-0"
+                                  alt={item.recipe.title}
+                                  className="w-full h-full object-cover transition-transform duration-500 group-hover/item:scale-105"
                                 />
+                                <button
+                                  onClick={() => handleRemoveRecipe(item.id)}
+                                  className="absolute top-1.5 right-1.5 opacity-0 group-hover/item:opacity-100 bg-neutral-950/70 hover:bg-rose-700 text-white p-1.5 transition-all duration-200 cursor-pointer shadow-xs border border-white/10"
+                                  title="Remove meal"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-2.5 h-2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                              {/* Recipe text link */}
+                              <div className="p-2.5 text-left">
                                 <Link
                                   href={`/recipes/${item.recipe.id}`}
-                                  className="text-xs font-bold text-gray-800 hover:text-orange-600 transition-colors truncate block"
+                                  className="text-[10px] font-bold text-neutral-900 hover:text-[#A94420] transition-colors line-clamp-2 uppercase tracking-wide leading-tight"
                                 >
                                   {item.recipe.title}
                                 </Link>
                               </div>
-                              <button
-                                onClick={() => handleRemoveRecipe(item.id)}
-                                className="opacity-0 group-hover/item:opacity-100 text-gray-400 hover:text-red-650 hover:bg-red-50 p-1 rounded-md transition-all cursor-pointer shrink-0"
-                                title="Remove meal"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
                             </div>
                           ))}
                         </div>
