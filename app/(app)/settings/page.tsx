@@ -1,9 +1,14 @@
 "use client";
 
-import ChefLogo from "@/app/components/ChefLogo";
-import { CookingGifBackdrop } from "@/app/components/CookingGifPlaster";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Montserrat } from "next/font/google";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-montserrat",
+});
 
 interface User {
   id: string;
@@ -32,6 +37,66 @@ export default function SettingsPage() {
   const [isCancelResultModalOpen, setIsCancelResultModalOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+
+  const [nameInput, setNameInput] = useState("");
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (user?.name) {
+      setNameInput(user.name);
+    }
+  }, [user]);
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    router.push("/login");
+  }
+
+  async function handleUpdateName(e: React.FormEvent) {
+    e.preventDefault();
+    if (!nameInput.trim() || !user) return;
+    if (nameInput.trim() === user.name) {
+      setIsEditing(false);
+      return;
+    }
+
+    setIsUpdatingName(true);
+    setUpdateError(null);
+    setUpdateSuccess(false);
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/auth/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: nameInput }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update profile name.");
+      }
+
+      if (data.user) {
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        setUpdateSuccess(true);
+        setIsEditing(false);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setUpdateError(err.message || "Failed to update profile name.");
+    } finally {
+      setIsUpdatingName(false);
+    }
+  }
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -153,151 +218,246 @@ export default function SettingsPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-900 border-t-transparent"></div>
-          <p className="text-gray-400 text-xs font-semibold">Loading settings...</p>
+      <div className={`flex min-h-screen items-center justify-center bg-[#FAF9F6] ${montserrat.variable} font-sans`}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-900 border-t-transparent"></div>
+          <p className="text-[10px] font-bold text-neutral-400 tracking-[0.2em] uppercase">ACCESSING CATER SETTINGS...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen font-sans bg-white text-gray-900">
-      <CookingGifBackdrop position="absolute" stackClass="z-[1]" />
+    <div className={`${montserrat.variable} font-sans relative min-h-screen bg-[#FAF9F6] text-[#111111]`}>
 
-      <div className="relative z-10 p-6 lg:p-12 max-w-5xl mx-auto">
-        <div className="flex items-center justify-between pb-8 mb-8 border-b border-gray-100">
+      <div className="relative z-10 px-6 sm:px-12 md:px-16 lg:px-20 pt-4 lg:pt-6 pb-12 lg:pb-16 max-w-6xl mx-auto">
+
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-neutral-900/10 pb-4 mb-8 gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Account Settings</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage your account profile, subscription plan, and security settings.</p>
-          </div>
-          <div className="hidden sm:block">
-            <ChefLogo size={32} />
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-[0.25em] uppercase text-neutral-900">
+              SETTINGS
+            </h1>
+            <p className="text-[10px] font-bold text-neutral-400 tracking-[0.2em] uppercase mt-2">
+              Manage profile, subscriptions & preferences
+            </p>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-10">
-          <div className="w-full md:w-64 shrink-0 flex md:flex-col gap-1 border-b md:border-b-0 md:border-r border-gray-100 pb-4 md:pb-0 md:pr-6">
+        {/* Layout Grid */}
+        <div className="flex flex-col md:flex-row gap-12">
+
+          {/* Sidebar Tabs */}
+          <div className="w-full md:w-64 shrink-0 flex md:flex-col gap-2 border-b md:border-b-0 md:border-r border-neutral-900/10 pb-4 md:pb-0 md:pr-8">
             <button
               onClick={() => setActiveTab("profile")}
-              className={`flex-1 md:flex-initial text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === "profile"
-                ? "bg-gray-100/80 text-gray-900"
-                : "text-gray-500 hover:text-gray-900 hover:bg-gray-50/50"
+              className={`flex-1 md:flex-initial text-left px-4 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer ${activeTab === "profile"
+                  ? "border-b-2 md:border-b-0 md:border-l-2 border-neutral-900 bg-neutral-900/5 text-neutral-900"
+                  : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-neutral-900 hover:bg-neutral-900/5"
                 }`}
             >
               Profile Settings
             </button>
             <button
               onClick={() => setActiveTab("billing")}
-              className={`flex-1 md:flex-initial text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === "billing"
-                ? "bg-gray-100/80 text-gray-900"
-                : "text-gray-500 hover:text-gray-900 hover:bg-gray-50/50"
+              className={`flex-1 md:flex-initial text-left px-4 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer ${activeTab === "billing"
+                  ? "border-b-2 md:border-b-0 md:border-l-2 border-neutral-900 bg-neutral-900/5 text-neutral-900"
+                  : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-neutral-900 hover:bg-neutral-900/5"
                 }`}
             >
               Billing & Plan
             </button>
             <button
               onClick={() => setActiveTab("danger")}
-              className={`flex-1 md:flex-initial text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer ${activeTab === "danger"
-                ? "bg-red-50/50 text-red-700"
-                : "text-gray-500 hover:text-red-600 hover:bg-red-50/30"
+              className={`flex-1 md:flex-initial text-left px-4 py-3 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer ${activeTab === "danger"
+                  ? "border-b-2 md:border-b-0 md:border-l-2 border-rose-600 bg-rose-50 text-rose-700"
+                  : "border-b-2 md:border-b-0 md:border-l-2 border-transparent text-neutral-400 hover:text-rose-600 hover:bg-rose-50/50"
                 }`}
             >
               Delete Account
             </button>
           </div>
 
+          {/* Active Tab Panel */}
           <div className="flex-1 max-w-2xl">
             {activeTab === "profile" && (
-              <div className="space-y-6">
+              <div className="space-y-8 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Profile Information</h2>
-                  <p className="text-sm text-gray-500 mt-1">This is your personal information details registered on the Chef platform.</p>
+                  <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.18em]">
+                    Profile Information
+                  </h2>
+                  <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-[0.15em] mt-1.5">
+                    Registered details on the Cater platform
+                  </p>
                 </div>
 
-                <div className="space-y-5 pt-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Full Name</label>
-                    <input
-                      type="text"
-                      value={user.name}
-                      readOnly
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-800 focus:outline-none cursor-not-allowed select-none"
-                    />
+                <div className="space-y-6 pt-4">
+                  {/* Name section (conditional editing UI) */}
+                  {isEditing ? (
+                    <form onSubmit={handleUpdateName} className="space-y-6">
+                      <div className="flex flex-col border-b border-neutral-900 py-1 transition-colors">
+                        <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1.5">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={nameInput}
+                          onChange={(e) => {
+                            setNameInput(e.target.value);
+                            setUpdateSuccess(false);
+                            setUpdateError(null);
+                          }}
+                          required
+                          autoFocus
+                          className="w-full bg-transparent text-xs font-bold text-neutral-800 uppercase tracking-[0.1em] focus:outline-none py-1"
+                        />
+                      </div>
+
+                      {/* Save & Cancel Actions */}
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditing(false);
+                            setNameInput(user.name);
+                            setUpdateError(null);
+                            setUpdateSuccess(false);
+                          }}
+                          className="px-6 py-3 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-lg transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isUpdatingName || nameInput.trim() === user.name}
+                          className="bg-neutral-950 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer shadow-xs border border-neutral-950 disabled:opacity-50"
+                        >
+                          {isUpdatingName ? "Saving..." : "Save Changes"}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="flex justify-between items-end border-b border-neutral-200 py-1 opacity-85 hover:border-neutral-400 transition-colors">
+                      <div className="flex-1 flex flex-col">
+                        <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1.5">
+                          Full Name
+                        </label>
+                        <span className="text-xs font-bold text-neutral-800 uppercase tracking-[0.1em] py-1 select-none">
+                          {user.name}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNameInput(user.name);
+                          setIsEditing(true);
+                          setUpdateSuccess(false);
+                          setUpdateError(null);
+                        }}
+                        className="text-[9px] font-bold text-neutral-500 hover:text-neutral-900 tracking-[0.2em] uppercase pb-1 transition-colors cursor-pointer"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Email address row */}
+                  <div className="flex flex-col border-b border-neutral-200 py-1 opacity-75">
+                    <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1.5">
+                      Email Address
+                    </label>
+                    <span className="text-xs font-semibold text-neutral-500 uppercase tracking-[0.1em] py-1 select-none">
+                      {user.email}
+                    </span>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Email Address</label>
-                    <input
-                      type="email"
-                      value={user.email}
-                      readOnly
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-800 focus:outline-none cursor-not-allowed select-none"
-                    />
-                  </div>
+                  {/* Feedback status messages */}
+                  {updateError && (
+                    <p className="text-[10px] text-rose-600 font-bold uppercase tracking-[0.15em] animate-in fade-in slide-in-from-top-1 duration-150">
+                      {updateError}
+                    </p>
+                  )}
+                  {updateSuccess && (
+                    <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-[0.15em] animate-in fade-in slide-in-from-top-1 duration-150">
+                      Name updated successfully
+                    </p>
+                  )}
+                </div>
+
+                {/* Logout Option Below */}
+                <div className="pt-8 border-t border-neutral-900/10 mt-8">
+                  <button
+                    onClick={handleLogout}
+                    className="bg-transparent hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-neutral-600 px-8 py-3.5 border border-neutral-200 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer"
+                  >
+                    Log Out
+                  </button>
                 </div>
               </div>
             )}
 
             {activeTab === "billing" && (
-              <div className="space-y-6">
+              <div className="space-y-8 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Plan & Subscription</h2>
-                  <p className="text-sm text-gray-500 mt-1">Review your currently active subscription tier or update payment methods.</p>
+                  <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.18em]">
+                    Plan & Subscription
+                  </h2>
+                  <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-[0.15em] mt-1.5">
+                    Review your active subscription tier or upgrade your access
+                  </p>
                 </div>
 
-                <div className="bg-gray-50/70 border border-gray-100 rounded-2xl p-6 flex items-center justify-between mt-4">
+                <div className="bg-white border border-neutral-200/60 rounded-xl p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-sm hover:shadow-md transition-all duration-300">
                   <div>
-                    <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider">Current Account Plan</span>
-                    <div className="flex items-center gap-2.5 mt-1">
-                      <h3 className="text-xl font-bold text-gray-900">
+                    <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-[0.25em]">Current Account Plan</span>
+                    <div className="flex items-center gap-3 mt-2">
+                      <h3 className="text-lg font-extrabold text-neutral-950 uppercase tracking-wider">
                         {user.hasProAccess ? "Pro Plan" : "Free Plan"}
                       </h3>
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${user.hasProAccess
-                        ? "bg-green-50 text-green-700 border border-green-100"
-                        : "bg-gray-100 text-gray-600 border border-gray-200"
+                      <span className={`inline-flex items-center gap-1.5 text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${user.hasProAccess
+                        ? "bg-green-50 text-green-700 border border-green-200/60"
+                        : "bg-neutral-100 text-neutral-600 border border-neutral-200"
                         }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${user.hasProAccess ? "bg-green-600" : "bg-gray-400"}`}></span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${user.hasProAccess ? "bg-green-600 animate-pulse" : "bg-neutral-400"}`}></span>
                         {user.hasProAccess ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider font-sans">Price</span>
-                    <p className="text-lg font-extrabold text-gray-900 mt-1">
-                      {user.hasProAccess ? "$29.99/mo" : "$0.00/mo"}
+                  <div className="sm:text-right border-t sm:border-t-0 border-neutral-100 pt-4 sm:pt-0">
+                    <span className="text-[9px] text-neutral-400 font-bold uppercase tracking-[0.25em]">Price</span>
+                    <p className="text-xl font-black text-neutral-950 mt-1 uppercase tracking-wider">
+                      {user.hasProAccess ? "$29.99 / mo" : "$0.00 / mo"}
                     </p>
                   </div>
                 </div>
 
                 <div className="pt-4 space-y-4">
                   {!user.hasProAccess ? (
-                    <div className="space-y-4">
-                      <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                    <div className="space-y-6">
+                      <p className="text-xs text-neutral-500 leading-relaxed font-medium uppercase tracking-wider">
                         Upgrade to Pro to unlock advanced AI-powered recipe generation, custom nutrition filters, and unlimited meal planning schedules.
                       </p>
                       <button
                         onClick={handleUpgrade}
-                        className="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer"
+                        className="bg-neutral-950 hover:bg-neutral-800 text-[#FAF9F6] px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 cursor-pointer shadow-xs hover:shadow-md border border-neutral-950"
                       >
                         Upgrade to Pro Plan
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                    <div className="space-y-6">
+                      <p className="text-xs text-neutral-500 leading-relaxed font-medium uppercase tracking-wider">
                         All premium features are fully active on your account. If you would like to end your subscription, you can click the button below to cancel your recurring billing setup.
                       </p>
                       {!user.cancelAtPeriodEnd && (user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing") ? (
                         <button
                           onClick={handleCancelSubscription}
-                          className="bg-white hover:bg-red-50 hover:text-red-700 hover:border-red-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-bold border border-gray-200 transition-all cursor-pointer"
+                          className="bg-transparent hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-neutral-600 px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase border border-neutral-200 transition-all cursor-pointer"
                         >
                           Cancel Plan
                         </button>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                        <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-200">
                           Your subscription is canceling (access active until period end)
                         </span>
                       )}
@@ -308,15 +468,19 @@ export default function SettingsPage() {
             )}
 
             {activeTab === "danger" && (
-              <div className="space-y-6">
+              <div className="space-y-8 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div>
-                  <h2 className="text-lg font-bold text-red-600">Delete Account</h2>
-                  <p className="text-sm text-gray-500 mt-1">These settings are highly sensitive. Once executed, they cannot be undone.</p>
+                  <h2 className="text-sm font-bold text-rose-600 uppercase tracking-[0.18em]">
+                    Delete Account
+                  </h2>
+                  <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-[0.15em] mt-1.5">
+                    Sensitive settings. These actions cannot be undone.
+                  </p>
                 </div>
 
-                <div className="border border-red-100 rounded-2xl p-6 space-y-4 bg-red-50/10">
-                  <h3 className="text-sm font-bold text-gray-900">Delete account permanently</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">
+                <div className="border border-rose-200/60 rounded-xl p-8 space-y-5 bg-rose-50/10 shadow-xs">
+                  <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-widest">Delete account permanently</h3>
+                  <p className="text-xs text-neutral-500 leading-relaxed uppercase tracking-wider">
                     By deleting your account, you will lose access to all custom recipes, ingredients list records, meal plan archives, and AI chat histories. All data will be permanently wiped.
                   </p>
                   <button
@@ -324,7 +488,7 @@ export default function SettingsPage() {
                       setDeleteInputText("");
                       setIsDeleteModalOpen(true);
                     }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xs transition-colors cursor-pointer"
+                    className="bg-rose-600 hover:bg-rose-700 text-white px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-colors cursor-pointer border border-rose-600"
                   >
                     Delete Account
                   </button>
@@ -339,40 +503,49 @@ export default function SettingsPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Modal backdrop */}
             <div
-              className="absolute inset-0 bg-gray-950/40 backdrop-blur-xs transition-opacity"
+              className="absolute inset-0 bg-neutral-950/40 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
               onClick={() => !isDeleting && setIsDeleteModalOpen(false)}
             />
 
             {/* Modal content */}
-            <div className="relative bg-white rounded-2xl shadow-xl border border-gray-100 max-w-sm w-full p-6 text-center animate-in fade-in zoom-in-95 duration-150 ease-out z-10">
-              <h3 className="text-base font-bold text-gray-900 mb-2">Are you absolutely sure?</h3>
-              <p className="text-xs text-gray-500 mb-5 leading-relaxed">
-                This will permanently delete your account and all associated data. To confirm, type <strong className="text-red-600 font-bold select-all">delete account</strong> below.
-              </p>
+            <div className="relative bg-[#FAF9F6] border border-neutral-200 p-8 text-center rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-w-md w-full space-y-6 z-10">
+              <div>
+                <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-2">
+                  Permanently delete account?
+                </h3>
+                <p className="text-xs text-neutral-400 leading-relaxed font-medium uppercase tracking-wider">
+                  This action is irreversible. To proceed, please type <strong className="text-rose-600 font-bold select-all">delete account</strong> below.
+                </p>
+              </div>
 
-              <input
-                type="text"
-                value={deleteInputText}
-                onChange={(e) => setDeleteInputText(e.target.value)}
-                disabled={isDeleting}
-                placeholder="Type 'delete account'"
-                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-center text-xs font-semibold text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600/50 mb-5 transition-all"
-              />
+              <div className="flex flex-col border-b border-neutral-300 py-1 focus-within:border-rose-600 transition-colors text-left">
+                <label className="text-[9px] font-extrabold text-neutral-400 uppercase tracking-[0.2em] mb-1">
+                  CONFIRMATION PHRASE
+                </label>
+                <input
+                  type="text"
+                  value={deleteInputText}
+                  onChange={(e) => setDeleteInputText(e.target.value)}
+                  disabled={isDeleting}
+                  placeholder="TYPE 'DELETE ACCOUNT'"
+                  className="w-full bg-transparent text-xs font-semibold text-neutral-900 placeholder-neutral-300 uppercase tracking-widest focus:outline-none py-1.5"
+                />
+              </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center">
                 <button
                   onClick={() => setIsDeleteModalOpen(false)}
                   disabled={isDeleting}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
+                  className="order-2 sm:order-1 px-6 py-3.5 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteAccount}
                   disabled={isDeleting || deleteInputText.trim().toLowerCase() !== "delete account"}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer disabled:opacity-30"
+                  className="order-1 sm:order-2 bg-rose-600 hover:bg-rose-700 text-white px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-rose-600 disabled:opacity-50 cursor-pointer shadow-xs"
                 >
-                  {isDeleting ? "Deleting..." : "Confirm"}
+                  {isDeleting ? "Deleting..." : "Delete Account"}
                 </button>
               </div>
             </div>
@@ -384,47 +557,41 @@ export default function SettingsPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Modal backdrop */}
             <div
-              className="absolute inset-0 bg-gray-950/60 backdrop-blur-md transition-opacity duration-300 animate-in fade-in"
+              className="absolute inset-0 bg-neutral-950/40 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
               onClick={() => !isCancelling && setIsCancelModalOpen(false)}
             />
 
             {/* Modal content */}
-            <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-md w-full p-8 text-center animate-in fade-in zoom-in-95 duration-200 ease-out z-10">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 mb-6 shadow-sm border border-rose-100">
+            <div className="relative bg-[#FAF9F6] border border-neutral-200 p-8 text-center rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-w-md w-full space-y-6 z-10">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 border border-rose-100 shadow-xs">
                 <svg className="h-8 w-8 text-rose-600 animate-pulse" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
               </div>
 
-              <h3 className="text-2xl font-black tracking-tight text-gray-900 mb-3">Cancel subscription?</h3>
-              <p className="text-sm text-gray-500 mb-8 leading-relaxed px-2">
-                We're really sad to see you go! You will lose access to premium AI-assisted meal planning, custom nutrition filters, and advanced recipe generation at the end of your billing cycle.
-              </p>
+              <div>
+                <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-2">
+                  Cancel subscription?
+                </h3>
+                <p className="text-xs text-neutral-400 leading-relaxed font-medium uppercase tracking-wider px-2">
+                  You will lose access to premium AI-assisted meal planning, custom nutrition filters, and advanced recipe generation at the end of your billing cycle.
+                </p>
+              </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center">
                 <button
                   onClick={() => setIsCancelModalOpen(false)}
                   disabled={isCancelling}
-                  className="flex-1 px-5 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                  className="order-2 sm:order-1 px-6 py-3.5 border border-neutral-300 hover:bg-neutral-100/50 text-neutral-600 text-[10px] font-bold tracking-[0.2em] uppercase rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                 >
                   Keep Pro Plan
                 </button>
                 <button
                   onClick={executeCancelSubscription}
                   disabled={isCancelling}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-md shadow-red-600/10 hover:shadow-lg hover:shadow-red-600/20 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                  className="order-1 sm:order-2 bg-rose-600 hover:bg-rose-700 text-white px-8 py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border border-rose-600 disabled:opacity-50 cursor-pointer shadow-xs"
                 >
-                  {isCancelling ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Processing...
-                    </span>
-                  ) : (
-                    "Yes, Cancel Plan"
-                  )}
+                  {isCancelling ? "Processing..." : "Yes, Cancel Plan"}
                 </button>
               </div>
             </div>
@@ -436,44 +603,52 @@ export default function SettingsPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Modal backdrop */}
             <div
-              className="absolute inset-0 bg-gray-950/60 backdrop-blur-md transition-opacity duration-300 animate-in fade-in"
+              className="absolute inset-0 bg-neutral-950/40 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in"
               onClick={() => !cancelError && handleResultModalClose()}
             />
 
             {/* Modal content */}
-            <div className="relative bg-white rounded-3xl shadow-2xl border border-gray-100 max-w-sm w-full p-8 text-center animate-in fade-in zoom-in-95 duration-200 ease-out z-10">
+            <div className="relative bg-[#FAF9F6] border border-neutral-200 p-8 text-center rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-w-sm w-full space-y-6 z-10">
               {cancelError ? (
                 <>
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 mb-6 shadow-sm border border-rose-100">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 border border-rose-100 shadow-xs">
                     <svg className="h-8 w-8 text-rose-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-black tracking-tight text-gray-900 mb-3">Cancellation Failed</h3>
-                  <p className="text-sm text-gray-500 mb-8 leading-relaxed">
-                    {cancelError}
-                  </p>
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-2">
+                      Cancellation Failed
+                    </h3>
+                    <p className="text-xs text-neutral-400 leading-relaxed font-medium uppercase tracking-wider px-2">
+                      {cancelError}
+                    </p>
+                  </div>
                   <button
                     onClick={() => setIsCancelResultModalOpen(false)}
-                    className="w-full bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                    className="w-full bg-neutral-950 hover:bg-neutral-800 text-white py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 border border-neutral-950 cursor-pointer"
                   >
                     Close
                   </button>
                 </>
               ) : (
                 <>
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 mb-6 shadow-sm border border-emerald-100">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 border border-emerald-100 shadow-xs">
                     <svg className="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-black tracking-tight text-gray-900 mb-3">Plan Cancelled</h3>
-                  <p className="text-sm text-gray-500 mb-8 leading-relaxed px-2">
-                    Your subscription has been successfully cancelled. You will continue to have full Pro access until the end of your current billing period.
-                  </p>
+                  <div>
+                    <h3 className="text-sm font-bold text-neutral-950 uppercase tracking-[0.2em] mb-2">
+                      Plan Cancelled
+                    </h3>
+                    <p className="text-xs text-neutral-400 leading-relaxed font-medium uppercase tracking-wider px-2">
+                      Your subscription has been successfully cancelled. Access active until the end of your billing cycle.
+                    </p>
+                  </div>
                   <button
                     onClick={handleResultModalClose}
-                    className="w-full bg-gray-900 hover:bg-gray-800 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+                    className="w-full bg-neutral-950 hover:bg-neutral-800 text-white py-3.5 rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-200 border border-neutral-950 cursor-pointer"
                   >
                     Got it, thanks
                   </button>
@@ -486,3 +661,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

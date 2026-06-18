@@ -146,10 +146,10 @@ export default function AppNavbar() {
             aria-label="Toggle user menu"
             aria-expanded={isDropdownOpen}
           >
-            <div className="w-10 h-10 rounded-full bg-linear-to-tr from-amber-500 to-orange-600 text-white font-semibold text-xs tracking-wider flex items-center justify-center shadow-md hover:scale-[1.04] active:scale-[0.98] transition-all">
+            <div className="w-10 h-10 rounded-full bg-linear-to-tr from-zinc-800 to-neutral-950 text-white font-semibold text-xs tracking-wider flex items-center justify-center shadow-md hover:scale-[1.04] active:scale-[0.98] transition-all">
               {getInitials()}
             </div>
-            <span className="absolute -inset-1 rounded-full border border-orange-500/0 group-hover:border-orange-500/20 transition-all duration-300 pointer-events-none" />
+            <span className="absolute -inset-1 rounded-full border border-neutral-900/0 group-hover:border-neutral-900/20 transition-all duration-300 pointer-events-none" />
           </button>
 
           {isDropdownOpen && (

@@ -259,7 +259,7 @@ export default function ChatPage() {
 
                     <div
                       className={`relative px-4.5 py-3 rounded-2xl text-sm leading-relaxed ${msg.role === "user"
-                        ? "bg-linear-to-r from-orange-500 to-red-600 text-white rounded-tr-none shadow-md shadow-orange-500/10 max-w-[80%]"
+                        ? "bg-neutral-900 dark:bg-zinc-800 text-white rounded-tr-none shadow-md max-w-[80%]"
                         : "bg-white/85 dark:bg-neutral-900/85 text-neutral-800 dark:text-neutral-200 rounded-tl-none border border-neutral-100 dark:border-neutral-800/80 shadow-xs max-w-[80%]"
                         }`}
                     >
@@ -268,7 +268,7 @@ export default function ChatPage() {
 
                     {/* User Avatar */}
                     {msg.role === "user" && (
-                      <div className="w-8 h-8 rounded-full bg-linear-to-tr from-amber-500 to-orange-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-md">
+                      <div className="w-8 h-8 rounded-full bg-linear-to-tr from-zinc-800 to-neutral-950 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-md">
                         U
                       </div>
                     )}
