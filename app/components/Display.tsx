@@ -119,7 +119,7 @@ export const Display = () => {
       ref={containerRef}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
-      className={`${montserrat.variable} relative w-full h-screen overflow-hidden flex flex-col md:flex-row items-center justify-between px-6 sm:px-12 md:px-20 lg:px-32 py-12 z-35 font-[family-name:var(--font-montserrat)]`}
+      className={`${montserrat.variable} relative w-full h-screen overflow-hidden flex flex-col md:flex-row items-center justify-between px-6 sm:px-12 md:px-20 lg:px-32 py-12 z-35 font-(family-name:--font-montserrat)`}
       style={{
         backgroundImage: "url('/images/table.png')",
         backgroundSize: "cover",
@@ -129,7 +129,7 @@ export const Display = () => {
     >
       {/* Dark overlay vignette to ensure legibility of texts and model pop */}
       <div className="absolute inset-0 bg-black/40 z-0 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50 z-0 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-black/50 z-0 pointer-events-none" />
 
       {/* Left Column: Bold Taglines */}
       <div
@@ -151,13 +151,13 @@ export const Display = () => {
           </h2>
         </div>
         <div className="overflow-hidden">
-          <h2 className="reveal-item text-4xl sm:text-5xl lg:text-6xl font-bold tracking-[0.04em] text-neutral-100 uppercase leading-[1.1] bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+          <h2 className="reveal-item text-4xl sm:text-5xl lg:text-6xl font-bold tracking-[0.04em] uppercase leading-[1.1] bg-linear-to-r from-white to-neutral-400 bg-clip-text text-transparent">
             CLOSE,
           </h2>
         </div>
         <div className="overflow-hidden mt-2">
           <p className="reveal-item text-neutral-300 font-light tracking-[0.05em] text-sm sm:text-base border-l-2 border-white/40 pl-4 py-1">
-            "Food that serves."
+            &quot;Food that serves.&quot;
           </p>
         </div>
       </div>
@@ -168,10 +168,10 @@ export const Display = () => {
         className="relative z-10 w-full md:w-[45%] h-[55%] md:h-[75%] overflow-visible flex items-center justify-center cursor-grab active:cursor-grabbing"
         style={{ transformStyle: "preserve-3d" }}
       >
-        
+
         {/* The 3D Canvas Scene */}
         <div className="absolute inset-0 z-10 w-full h-full">
-          <Scene 
+          <Scene
             modelScale={2.5}
             cameraPosition={[0, 1.15, 1.65]}
             fov={42}
@@ -203,7 +203,7 @@ export const Display = () => {
           <p className="reveal-item text-xs sm:text-sm text-neutral-300 leading-relaxed font-light tracking-[0.02em]">
             A culinary journey customized to your cravings. No matter the ingredients in your fridge, we bridge the gap between imagination and a perfect plate.
           </p>
-          
+
           <div className="reveal-item flex items-center gap-3 cursor-pointer group mt-2">
             <span className="text-[10px] sm:text-xs font-light tracking-[0.2em] uppercase text-white transition-opacity duration-300 group-hover:opacity-75">
               DISCOVER MORE

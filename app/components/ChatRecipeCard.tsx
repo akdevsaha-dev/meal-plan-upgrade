@@ -57,8 +57,8 @@ export default function ChatRecipeCard({ recipe }: ChatRecipeCardProps) {
   }
 
   return (
-    <div className="w-full max-w-md bg-white border border-neutral-200/60 rounded-none flex flex-col hover:border-neutral-900 transition-all duration-300 group shadow-xs overflow-hidden animate-in fade-in duration-300">
-      
+    <div className="w-full max-w-md bg-white border border-neutral-200/60 rounded-none flex flex-col hover:border-neutral-900 transition-all duration-300 group shadow-xs overflow-hidden animate-in fade-in">
+
       {/* Recipe Header Banner Image (same aspect and look as catalog card) */}
       <div className="relative aspect-16/10 overflow-hidden rounded-none border-b border-neutral-100">
         <img
@@ -75,7 +75,7 @@ export default function ChatRecipeCard({ recipe }: ChatRecipeCardProps) {
       </div>
 
       <div className="p-6 flex flex-col text-left">
-        
+
         {/* Category & Tags - matching RecipeCard styles */}
         <div className="text-[9px] font-bold text-[#A94420] tracking-[0.25em] uppercase mb-2">
           {recipe.cuisine ? `${recipe.cuisine} ` : ""}
@@ -95,11 +95,10 @@ export default function ChatRecipeCard({ recipe }: ChatRecipeCardProps) {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`py-2 px-4 text-[10px] font-bold uppercase tracking-[0.15em] border-b-2 -mb-[2px] transition-all cursor-pointer ${
-                activeTab === tab
+              className={`py-2 px-4 text-[10px] font-bold uppercase tracking-[0.15em] border-b-2 -mb-[2px] transition-all cursor-pointer ${activeTab === tab
                   ? "text-[#A94420] border-[#A94420]"
                   : "text-neutral-400 border-transparent hover:text-neutral-600"
-              }`}
+                }`}
             >
               {tab}
             </button>
@@ -108,7 +107,7 @@ export default function ChatRecipeCard({ recipe }: ChatRecipeCardProps) {
 
         {/* Tab Body Content */}
         <div className="min-h-[120px]">
-          
+
           {/* Overview Tab */}
           {activeTab === "overview" && (
             <div className="space-y-5 animate-in fade-in duration-200">
@@ -157,11 +156,10 @@ export default function ChatRecipeCard({ recipe }: ChatRecipeCardProps) {
                     <label
                       key={idx}
                       onClick={() => toggleIngredient(idx)}
-                      className={`flex items-center gap-3 py-2 px-3 border border-neutral-150 rounded-none cursor-pointer transition-colors ${
-                        isChecked
+                      className={`flex items-center gap-3 py-2 px-3 border border-neutral-150 rounded-none cursor-pointer transition-colors ${isChecked
                           ? "bg-neutral-50 text-neutral-400 line-through border-neutral-150"
                           : "bg-white text-neutral-700 hover:bg-neutral-50/50"
-                      }`}
+                        }`}
                     >
                       <input
                         type="checkbox"

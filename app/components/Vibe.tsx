@@ -31,7 +31,6 @@ export const Vibe = () => {
   const desc2FloatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // One-time opacity reveal trigger when section enters viewport
     const s1RevealTl = gsap.timeline({
       scrollTrigger: {
         trigger: section1Ref.current,
@@ -273,7 +272,7 @@ export const Vibe = () => {
           <div className="mt-4 sm:mt-8">
             <h2
               ref={headline2Ref}
-              className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-widest sm:tracking-[0.15em] uppercase leading-[1.25] text-white"
+              className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-widest sm:tracking-[0.15em] uppercase leading-tight text-white"
             >
               <span ref={headline2FloatRef} className="block">
                 FLAVORS THAT<br />

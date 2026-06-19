@@ -247,7 +247,7 @@ export default function ChatPage() {
             <span>BACK</span>
           </Link>
 
-          <div className="h-6 w-[1px] bg-neutral-200" />
+          <div className="h-6 w-px bg-neutral-200" />
 
           <div className="flex items-center gap-3">
             <div className="relative">

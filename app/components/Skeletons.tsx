@@ -8,7 +8,7 @@ export function RecipesSkeleton() {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {[...Array(6)].map((_, i) => (
         <div key={i} className="bg-white border border-neutral-200/60 rounded-none flex flex-col h-full animate-pulse shadow-xs">
-          <div className="relative aspect-[16/10] bg-neutral-250/70 dark:bg-neutral-800 rounded-none border-b border-neutral-100" />
+          <div className="relative aspect-16/10 bg-neutral-250/70 dark:bg-neutral-800 rounded-none border-b border-neutral-100" />
           <div className="p-6 flex flex-col grow text-left space-y-4">
             <div>
               {/* Category & Tags */}
@@ -50,13 +50,13 @@ export function ChatSkeleton() {
         <div className="bg-neutral-200 dark:bg-neutral-800 rounded-2xl rounded-tr-none px-5 py-4 w-1/3 h-12 shadow-md" />
         <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-800 shrink-0" />
       </div>
-      
+
       {/* Assistant Message Skeleton */}
       <div className="flex items-start gap-3.5 justify-start">
         <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-800 shrink-0" />
         <div className="space-y-4 flex-1 max-w-[80%]">
           <div className="bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-2xl rounded-tl-none px-5 py-4 h-16 shadow-xs w-2/3" />
-          
+
           {/* Pulsing Recipe Card in Chat */}
           <div className="pl-0 max-w-2xl w-full">
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200/60 dark:border-neutral-800/80 rounded-3xl shadow-xl overflow-hidden">
@@ -193,7 +193,7 @@ export function MealPlanDetailSkeleton() {
 
         {/* Agenda Panel Skeleton */}
         <div className="lg:col-span-8 bg-white border border-neutral-200/80 p-6 md:p-8 rounded-xl shadow-xs space-y-6">
-          
+
           <div className="flex justify-between items-center border-b border-neutral-100 pb-4 mb-6">
             <div className="space-y-2.5">
               <div className="h-5 bg-neutral-300 w-32 rounded-md" />

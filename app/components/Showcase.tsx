@@ -93,7 +93,7 @@ export default function Showcase() {
     <section
       ref={sectionRef}
       id="showcase"
-      className={`${montserrat.variable} w-full min-h-[85vh] bg-[#F4EFE6] text-neutral-800 flex flex-col md:flex-row items-start justify-between py-28 px-6 sm:px-12 md:px-20 lg:px-32 relative z-30 font-[family-name:var(--font-montserrat)] border-t border-neutral-200/30 overflow-hidden`}
+      className={`${montserrat.variable} w-full min-h-[85vh] bg-[#F4EFE6] text-neutral-800 flex flex-col md:flex-row items-start justify-between py-28 px-6 sm:px-12 md:px-20 lg:px-32 relative z-30 font-(family-name:--font-montserrat) border-t border-neutral-200/30 overflow-hidden`}
     >
       {/* Left Column Category Tag */}
       <div

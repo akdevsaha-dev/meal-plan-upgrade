@@ -218,7 +218,7 @@ export const Navbar = ({ isRevealed = true }: { isRevealed?: boolean }) => {
             </div>
 
             <div className="px-4 pb-4 w-full">
-              <div className="relative w-full aspect-[2/1] overflow-hidden rounded-sm">
+              <div className="relative w-full aspect-2/1 overflow-hidden rounded-sm">
                 <img
                   src="/images/navbar-drop.jpg"
                   alt="Chef dish banner"

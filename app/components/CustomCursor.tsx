@@ -25,7 +25,7 @@ export default function CustomCursor() {
     const onMouseMove = (e: MouseEvent) => {
       setX(e.clientX);
       setY(e.clientY);
-      
+
       if (!isVisible) {
         setIsVisible(true);
       }
@@ -104,9 +104,8 @@ export default function CustomCursor() {
   return (
     <div
       ref={cursorRef}
-      className={`custom-cursor-ball fixed top-0 left-0 w-2.5 h-2.5 bg-white rounded-full pointer-events-none z-[99999] -translate-x-1/2 -translate-y-1/2 mix-blend-difference transition-opacity duration-300 ${
-        isVisible ? "opacity-100" : "opacity-0"
-      }`}
+      className={`custom-cursor-ball fixed top-0 left-0 w-2.5 h-2.5 bg-white rounded-full pointer-events-none z-99999 -translate-x-1/2 -translate-y-1/2 mix-blend-difference transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"
+        }`}
       style={{ willChange: "transform" }}
     />
   );

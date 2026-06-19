@@ -17,11 +17,12 @@ model User {
   subscriptionStatus   String?
   currentPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean?
-  plan                 String        @default("free")
-  createdAt            DateTime      @default(now())
+  plan                 String               @default("free")
+  createdAt            DateTime             @default(now())
   recipes              Recipe[]
   mealPlans            MealPlan[]
   chatMessages         ChatMessage[]
+  passwordResetTokens  PasswordResetToken[]
 }
 
 model Recipe {
@@ -80,4 +81,13 @@ model ChatMessage {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
 }

@@ -55,7 +55,7 @@ export default function About() {
     <section
       ref={sectionRef}
       id="about"
-      className={`${montserrat.variable} w-full min-h-screen bg-[#FAF9F6] text-neutral-800 flex flex-col md:flex-row py-24 px-6 sm:px-12 md:px-20 lg:px-32 relative z-30 font-[family-name:var(--font-montserrat)] justify-between items-start gap-8 md:gap-12`}
+      className={`${montserrat.variable} w-full min-h-screen bg-[#FAF9F6] text-neutral-800 flex flex-col md:flex-row py-24 px-6 sm:px-12 md:px-20 lg:px-32 relative z-30 font-(family-name:--font-montserrat) justify-between items-start gap-8 md:gap-12`}
     >
       <div
         ref={tagRef}
@@ -84,7 +84,7 @@ export default function About() {
         className="w-full md:w-[48%] flex flex-col justify-between min-h-[50vh] md:min-h-[60vh] py-2 text-left"
       >
         <div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-[0.08em] uppercase leading-[1.25] text-neutral-900">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light tracking-[0.08em] uppercase leading-tight text-neutral-900">
             COOKING THAT<br />
             FEELS PERSONAL
           </h2>
