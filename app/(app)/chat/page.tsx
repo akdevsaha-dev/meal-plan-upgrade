@@ -2,6 +2,7 @@
 
 import ChefLogo from "@/app/components/ChefLogo";
 import ChatRecipeCard, { Recipe } from "@/app/components/ChatRecipeCard";
+import ChatMarkdown from "@/app/components/ChatMarkdown";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ChatSkeleton } from "@/app/components/Skeletons";
@@ -11,6 +12,13 @@ interface Message {
   role: "user" | "assistant";
   content: string;
 }
+
+// Mirrors the newline-delimited JSON event protocol emitted by /api/chat.
+type ChatStreamEvent =
+  | { type: "text"; content: string }
+  | { type: "message"; content: string }
+  | { type: "thinking" }
+  | { type: "recipe"; recipe: Recipe };
 
 const BACKGROUNDS = ["cui1", "cui2", "cui3", "gallery"];
 
@@ -162,48 +170,106 @@ export default function ChatPage() {
         throw new Error(`Chat API error (${res.status})`);
       }
 
-      const recipeDataHeader = res.headers.get("X-Recipe-Data");
-      if (recipeDataHeader) {
-        try {
-          const recipe: Recipe = JSON.parse(decodeURIComponent(recipeDataHeader));
-          setRecipes((prev) => ({
-            ...prev,
-            [recipe.id]: recipe,
-          }));
-        } catch (e) {
-          console.error("Failed to parse recipe data header:", e);
-        }
-      }
-
       const reader = res.body?.getReader();
       if (!reader) {
         throw new Error("No response body reader available");
       }
 
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-      setLoading(false);
-
       const decoder = new TextDecoder();
-      let assistantContent = "";
+      let buffer = "";
+
+      // Tracks whether the last bubble is an open "text" bubble we keep appending
+      // to (normal chat). Standalone "message" events always start a new bubble.
+      let streamingText = false;
+      let streamingContent = "";
+
+      const handleEvent = (event: ChatStreamEvent) => {
+        switch (event.type) {
+          case "text": {
+            setLoading(false);
+            if (!streamingText) {
+              streamingText = true;
+              streamingContent = event.content;
+              setMessages((prev) => [
+                ...prev,
+                { role: "assistant", content: streamingContent },
+              ]);
+            } else {
+              streamingContent += event.content;
+              setMessages((prev) => {
+                const copy = [...prev];
+                copy[copy.length - 1] = {
+                  role: "assistant",
+                  content: streamingContent,
+                };
+                return copy;
+              });
+            }
+            break;
+          }
+          case "message": {
+            setLoading(false);
+            streamingText = false;
+            streamingContent = "";
+            setMessages((prev) => [
+              ...prev,
+              { role: "assistant", content: event.content },
+            ]);
+            break;
+          }
+          case "thinking": {
+            streamingText = false;
+            streamingContent = "";
+            setLoading(true);
+            break;
+          }
+          case "recipe": {
+            if (event.recipe) {
+              streamingText = false;
+              streamingContent = "";
+              const recipe = event.recipe;
+              setRecipes((prev) => ({
+                ...prev,
+                [recipe.id]: recipe,
+              }));
+              // Card lives in its own message so the sign-off can follow it.
+              setMessages((prev) => [
+                ...prev,
+                { role: "assistant", content: `<!-- recipeId:${recipe.id} -->` },
+              ]);
+            }
+            break;
+          }
+        }
+      };
+
+      const processLine = (line: string) => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+        try {
+          handleEvent(JSON.parse(trimmed) as ChatStreamEvent);
+        } catch (e) {
+          console.error("Failed to parse chat stream event:", e, trimmed);
+        }
+      };
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        assistantContent += chunk;
+        buffer += decoder.decode(value, { stream: true });
 
-        setMessages((prev) => {
-          const copy = [...prev];
-          if (copy.length > 0) {
-            copy[copy.length - 1] = {
-              role: "assistant",
-              content: assistantContent,
-            };
-          }
-          return copy;
-        });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) >= 0) {
+          const line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          processLine(line);
+        }
       }
+
+      // Flush any trailing event that wasn't newline-terminated.
+      processLine(buffer);
+      setLoading(false);
     } catch (err) {
       console.error("Failed to stream chat:", err);
       setRateLimitError("Something went wrong. Please check your connection and try again.");
@@ -389,33 +455,39 @@ export default function ChatPage() {
 
                 return (
                   <div key={i} className="space-y-4">
-                    {/* Text bubble */}
-                    <div
-                      className={`flex items-start gap-3.5 ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in duration-300`}
-                    >
-                      {/* Assistant Avatar */}
-                      {msg.role === "assistant" && (
-                        <div className="w-8 h-8 rounded-full bg-neutral-50 border border-neutral-200 flex items-center justify-center shrink-0 shadow-xs">
-                          <ChefLogo size={20} priority href={null} />
-                        </div>
-                      )}
-
+                    {/* Text bubble (skipped for marker-only card messages) */}
+                    {cleanText && (
                       <div
-                        className={`relative px-5 py-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-xs ${msg.role === "user"
-                          ? "bg-neutral-900 text-white rounded-tr-none max-w-[80%]"
-                          : "bg-white/95 border border-neutral-200/60 text-neutral-800 rounded-tl-none max-w-[85%]"
-                          }`}
+                        className={`flex items-start gap-3.5 ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in duration-300`}
                       >
-                        <p className="whitespace-pre-wrap">{cleanText}</p>
-                      </div>
+                        {/* Assistant Avatar */}
+                        {msg.role === "assistant" && (
+                          <div className="w-8 h-8 rounded-full bg-neutral-50 border border-neutral-200 flex items-center justify-center shrink-0 shadow-xs">
+                            <ChefLogo size={20} priority href={null} />
+                          </div>
+                        )}
 
-                      {/* User Avatar */}
-                      {msg.role === "user" && (
-                        <div className="w-8 h-8 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                          U
+                        <div
+                          className={`relative px-5 py-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-xs ${msg.role === "user"
+                            ? "bg-neutral-900 text-white rounded-tr-none max-w-[80%]"
+                            : "bg-white/95 border border-neutral-200/60 text-neutral-800 rounded-tl-none max-w-[85%]"
+                            }`}
+                        >
+                          {msg.role === "assistant" ? (
+                            <ChatMarkdown content={cleanText} />
+                          ) : (
+                            <p className="whitespace-pre-wrap">{cleanText}</p>
+                          )}
                         </div>
-                      )}
-                    </div>
+
+                        {/* User Avatar */}
+                        {msg.role === "user" && (
+                          <div className="w-8 h-8 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                            U
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Render recipe card directly below the assistant message bubble */}
                     {associatedRecipe && (

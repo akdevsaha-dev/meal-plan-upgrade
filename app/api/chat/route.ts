@@ -10,9 +10,31 @@ import { RecipeSchema } from "@/validation/recipeSchema";
 import { sanitizeRecipe } from "@/lib/sanitizeRecipe";
 import { streamText, generateText, Output } from "ai";
 import { checkChatRateLimit } from "@/lib/rate-limit";
+import { pickAckMessage, pickClosingMessage, stripJsonBlocks } from "@/lib/chefMessages";
 
 const MAX_HISTORY = 20;
 const MAX_MESSAGE_LENGTH = 2000;
+
+/**
+ * Newline-delimited JSON stream protocol shared with the chat client.
+ *
+ * Each event is a single JSON object on its own line:
+ *  - { type: "text",     content }  → append to the current streaming bubble
+ *  - { type: "message",  content }  → a complete standalone assistant bubble
+ *  - { type: "thinking" }           → re-show the typing indicator
+ *  - { type: "recipe",   recipe }   → attach a generated recipe card
+ */
+type ChatEvent =
+  | { type: "text"; content: string }
+  | { type: "message"; content: string }
+  | { type: "thinking" }
+  | { type: "recipe"; recipe: unknown };
+
+const NDJSON_HEADERS = { "Content-Type": "application/x-ndjson; charset=utf-8" };
+
+function encodeEvent(encoder: TextEncoder, event: ChatEvent): Uint8Array {
+  return encoder.encode(JSON.stringify(event) + "\n");
+}
 
 export const GET = withErrorHandler(async (req: NextRequest) => {
   const session = getUserFromRequest(req);
@@ -160,118 +182,113 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
       );
     }
 
-    try {
-      const { output: recipe } = await generateText({
-        model: openaiClient(DEFAULT_MODEL),
-        output: Output.object({
-          schema: RecipeSchema,
-        }),
-        system: "You are a professional chef. Generate a realistic and delicious recipe based on the user's request. Fill in all fields appropriately.",
-        messages: formattedMessages,
-      });
+    const encoder = new TextEncoder();
 
-      const sanitized = sanitizeRecipe(recipe);
+    // Stream the conversation in phases so the chat feels human and interactive:
+    //   1. an instant, warm acknowledgement ("Great choice!...")
+    //   2. a "thinking" beat while the recipe is actually generated
+    //   3. the recipe card followed by a friendly sign-off
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (event: ChatEvent) => controller.enqueue(encodeEvent(encoder, event));
 
-      let createdRecipe = await prisma.recipe.create({
-        data: {
-          title: sanitized.title,
-          description: sanitized.description || "",
-          imageUrl: "/images/recipes/default.jpg",
-          prepTime: sanitized.prepTime,
-          cookTime: sanitized.cookTime,
-          servings: sanitized.servings,
-          calories: sanitized.calories,
-          cuisine: sanitized.cuisine,
-          dietaryTags: sanitized.dietaryTags ? sanitized.dietaryTags.join(", ") : null,
-          steps: JSON.stringify(sanitized.steps),
-          userId: userId,
-          ingredients: {
-            create: sanitized.ingredients.map((ing) => ({
-              name: ing.name,
-              amount: ing.amount,
-              unit: ing.unit,
-            })),
-          },
-        },
-        include: { ingredients: true },
-      });
-
-      try {
-        const imagePrompt = sanitized.imagePrompt;
-        const imageUrl = await generateRecipeImage(imagePrompt);
-        createdRecipe = await prisma.recipe.update({
-          where: { id: createdRecipe.id },
-          data: { imageUrl },
-          include: { ingredients: true },
+        // 1. Warm acknowledgement (saved + shown immediately).
+        const ackMessage = pickAckMessage();
+        send({ type: "message", content: ackMessage });
+        await prisma.chatMessage.create({
+          data: { role: "assistant", content: ackMessage, userId },
         });
-      } catch (err) {
-        console.error("Recipe image generation failed in structured pipeline:", err);
-      }
 
+        // 2. Show the typing indicator again while we cook.
+        send({ type: "thinking" });
 
-      const conciseMessage = `Recipe created successfully.
-Recipe: ${sanitized.title}
-Prep Time: ${sanitized.prepTime} min
-Cook Time: ${sanitized.cookTime} min
-Calories: ${sanitized.calories || "N/A"}
-Servings: ${sanitized.servings}
-View the recipe card below.
+        try {
+          const { output: recipe } = await generateText({
+            model: openaiClient(DEFAULT_MODEL),
+            output: Output.object({
+              schema: RecipeSchema,
+            }),
+            system: "You are a professional chef. Generate a realistic and delicious recipe based on the user's request. Fill in all fields appropriately.",
+            messages: formattedMessages,
+          });
 
-<!-- recipeId:${createdRecipe.id} -->`;
+          const sanitized = sanitizeRecipe(recipe);
 
-      await prisma.chatMessage.create({
-        data: {
-          role: "assistant",
-          content: conciseMessage,
-          userId: userId,
-        },
-      });
+          let createdRecipe = await prisma.recipe.create({
+            data: {
+              title: sanitized.title,
+              description: sanitized.description || "",
+              imageUrl: "/images/recipes/default.jpg",
+              prepTime: sanitized.prepTime,
+              cookTime: sanitized.cookTime,
+              servings: sanitized.servings,
+              calories: sanitized.calories,
+              cuisine: sanitized.cuisine,
+              dietaryTags: sanitized.dietaryTags ? sanitized.dietaryTags.join(", ") : null,
+              steps: JSON.stringify(sanitized.steps),
+              userId: userId,
+              ingredients: {
+                create: sanitized.ingredients.map((ing) => ({
+                  name: ing.name,
+                  amount: ing.amount,
+                  unit: ing.unit,
+                })),
+              },
+            },
+            include: { ingredients: true },
+          });
 
-      const encoder = new TextEncoder();
-      const stream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(encoder.encode(conciseMessage));
+          try {
+            const imagePrompt = sanitized.imagePrompt;
+            const imageUrl = await generateRecipeImage(imagePrompt);
+            createdRecipe = await prisma.recipe.update({
+              where: { id: createdRecipe.id },
+              data: { imageUrl },
+              include: { ingredients: true },
+            });
+          } catch (err) {
+            console.error("Recipe image generation failed in structured pipeline:", err);
+          }
+
+          // 3a. The recipe card itself. It is persisted as its own marker-only
+          //     message so that, on reload, the card renders in this position —
+          //     before the sign-off, matching the live order.
+          send({ type: "recipe", recipe: createdRecipe });
+          await prisma.chatMessage.create({
+            data: {
+              role: "assistant",
+              content: `<!-- recipeId:${createdRecipe.id} -->`,
+              userId,
+            },
+          });
+
+          // 3b. Friendly sign-off, shown after the card.
+          const closing = pickClosingMessage(sanitized.title);
+          send({ type: "message", content: closing });
+          await prisma.chatMessage.create({
+            data: { role: "assistant", content: closing, userId },
+          });
+        } catch (err) {
+          console.error("Structured recipe pipeline error, running fallback:", err);
+
+          const errMsg = err instanceof Error ? err.message : String(err);
+          const fallbackText = `Sorry, I ran into a problem while preparing that recipe (${errMsg}). Could you try asking me again?`;
+          send({ type: "message", content: fallbackText });
+          await prisma.chatMessage.create({
+            data: { role: "assistant", content: fallbackText, userId },
+          });
+        } finally {
           controller.close();
-        },
-      });
+        }
+      },
+    });
 
-      return new NextResponse(stream, {
-        headers: {
-          ...rateLimitHeaders,
-          "Content-Type": "text/plain; charset=utf-8",
-          "X-Recipe-Data": encodeURIComponent(JSON.stringify(createdRecipe)),
-        },
-      });
-
-    } catch (err) {
-      console.error("Structured recipe pipeline error, running fallback:", err);
-
-      const errMsg = err instanceof Error ? err.message : String(err);
-      const fallbackText = `I encountered an issue generating your structured recipe card. Error: ${errMsg}. Please try again.`;
-
-      await prisma.chatMessage.create({
-        data: {
-          role: "assistant",
-          content: fallbackText,
-          userId: userId,
-        },
-      });
-
-      const encoder = new TextEncoder();
-      const stream = new ReadableStream({
-        start(controller) {
-          controller.enqueue(encoder.encode(fallbackText));
-          controller.close();
-        },
-      });
-
-      return new NextResponse(stream, {
-        headers: {
-          ...rateLimitHeaders,
-          "Content-Type": "text/plain; charset=utf-8",
-        },
-      });
-    }
+    return new NextResponse(stream, {
+      headers: {
+        ...rateLimitHeaders,
+        ...NDJSON_HEADERS,
+      },
+    });
 
   } else {
     const result = streamText({
@@ -279,21 +296,67 @@ View the recipe card below.
       system: SYSTEM_PROMPT,
       messages: formattedMessages,
       temperature: 0.7,
-      async onFinish({ text }) {
+    });
+
+    const encoder = new TextEncoder();
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (event: ChatEvent) => controller.enqueue(encodeEvent(encoder, event));
+
+        // Sanitize incrementally: only ever emit the cleaned text we haven't
+        // sent yet. While a JSON block is mid-stream the cleaned length doesn't
+        // grow, so partial JSON never leaks to the client.
+        let full = "";
+        let emitted = "";
+
         try {
-          await prisma.chatMessage.create({
-            data: {
-              role: "assistant",
-              content: text,
-              userId: userId,
-            },
+          for await (const delta of result.textStream) {
+            full += delta;
+            const clean = stripJsonBlocks(full);
+            if (clean.length > emitted.length) {
+              send({ type: "text", content: clean.slice(emitted.length) });
+              emitted = clean;
+            }
+          }
+
+          const finalClean = stripJsonBlocks(full).trim();
+          if (finalClean.length > emitted.length) {
+            send({ type: "text", content: finalClean.slice(emitted.length) });
+          }
+
+          const contentToSave =
+            finalClean ||
+            "Sorry, I couldn't put that into words just now. Could you rephrase?";
+
+          if (!finalClean) {
+            send({ type: "message", content: contentToSave });
+          }
+
+          try {
+            await prisma.chatMessage.create({
+              data: { role: "assistant", content: contentToSave, userId },
+            });
+          } catch (dbErr) {
+            console.error("Failed to write assistant response in normal chat pipeline:", dbErr);
+          }
+        } catch (err) {
+          console.error("Normal chat streaming error:", err);
+          send({
+            type: "message",
+            content: "Sorry, something went wrong on my end. Please try again.",
           });
-        } catch (dbErr) {
-          console.error("Failed to write assistant response in normal chat pipeline:", dbErr);
+        } finally {
+          controller.close();
         }
       },
     });
 
-    return result.toTextStreamResponse({ headers: rateLimitHeaders });
+    return new NextResponse(stream, {
+      headers: {
+        ...rateLimitHeaders,
+        ...NDJSON_HEADERS,
+      },
+    });
   }
 });
