@@ -15,6 +15,7 @@ import Upgrade from "./components/Upgrade";
 import About from "./components/About";
 import Preloader from "./components/Preloader";
 import { Display } from "./components/Display";
+import SmoothScroll from "./components/SmoothScroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -79,7 +80,7 @@ export default function Home() {
   }, [isRevealed]);
 
   return (
-    <>
+    <SmoothScroll>
       {isLoading && (
         <Preloader
           onRevealStart={() => setIsRevealed(true)}
@@ -102,6 +103,6 @@ export default function Home() {
         <Memory />
         <Footer />
       </main>
-    </>
+    </SmoothScroll>
   );
 }
