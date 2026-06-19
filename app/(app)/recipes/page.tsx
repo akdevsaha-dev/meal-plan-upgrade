@@ -150,26 +150,33 @@ export default function RecipesPage() {
         {isLoading ? (
           <RecipesSkeleton />
         ) : recipes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 px-6 bg-white border border-neutral-200 rounded-none text-center max-w-xl mx-auto shadow-xs">
-            <div className="w-12 h-12 rounded-none border border-neutral-300 text-neutral-800 flex items-center justify-center mb-6">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-              </svg>
-            </div>
-            <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.2em] mb-2">Recipe Catalog is Empty</h2>
-            <p className="text-xs text-neutral-400 leading-relaxed max-w-sm mb-8 font-medium">
-              Start building your premium culinary collection to plan customized menus effortlessly.
-            </p>
-            <Link
-              href={hasHitRecipeLimit ? "/settings?tab=billing" : "/chat"}
-              className={`px-8 py-3.5 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border ${
-                hasHitRecipeLimit 
+          <div
+            className="relative flex flex-col items-center justify-center py-20 px-6 border border-neutral-200 rounded-none text-center max-w-xl mx-auto shadow-xs overflow-hidden bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: "url('/images/empty-recipe.png')" }}
+          >
+            {/* Premium glass-tint overlay */}
+            <div className="absolute inset-0 bg-[#FAF9F6]/65 backdrop-blur-[1px] z-0" />
+
+            <div className="relative z-10 flex flex-col items-center justify-center w-full">
+              <div className="w-12 h-12 rounded-none border border-neutral-300 text-neutral-800 flex items-center justify-center mb-6 bg-[#FAF9F6]/60 backdrop-blur-xs">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                </svg>
+              </div>
+              <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-[0.2em] mb-2">Recipe Catalog is Empty</h2>
+              <p className="text-xs text-neautral-700 leading-relaxed max-w-sm mb-8 font-semibold">
+                Start building your premium culinary collection to plan customized menus effortlessly.
+              </p>
+              <Link
+                href={hasHitRecipeLimit ? "/settings?tab=billing" : "/chat"}
+                className={`px-8 py-3.5 rounded-none text-[10px] font-bold tracking-[0.2em] uppercase transition-all text-center border ${hasHitRecipeLimit
                   ? "bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs"
                   : "bg-neutral-900 hover:bg-neutral-800 text-white border-neutral-900"
-              }`}
-            >
-              {hasHitRecipeLimit ? "UPGRADE TO CREATE &rarr;" : "CREATE VIA BOT"}
-            </Link>
+                  }`}
+              >
+                {hasHitRecipeLimit ? "UPGRADE TO CREATE &rarr;" : "CREATE VIA BOT"}
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

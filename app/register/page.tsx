@@ -77,7 +77,13 @@ export default function RegisterPage() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      router.push("/recipes");
+      
+      const plan = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("plan") : null;
+      if (plan === "pro") {
+        router.push("/settings");
+      } else {
+        router.push("/recipes");
+      }
     } catch (err) {
       console.error(err);
       setError("An unexpected network error occurred. Please try again.");
@@ -293,7 +299,10 @@ export default function RegisterPage() {
 
         <div className="text-xs font-semibold text-neutral-400 select-none">
           Already have an account?{" "}
-          <a href="/login" className="text-neutral-900 hover:underline transition-all">
+          <a
+            href={typeof window !== "undefined" && new URLSearchParams(window.location.search).get("plan") === "pro" ? "/login?plan=pro" : "/login"}
+            className="text-neutral-900 hover:underline transition-all"
+          >
             Log in
           </a>
         </div>

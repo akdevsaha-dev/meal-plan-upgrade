@@ -1,6 +1,7 @@
 "use client";
 
 import { Montserrat, Antonio } from "next/font/google";
+import { useRouter } from "next/navigation";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -15,13 +16,15 @@ const antonio = Antonio({
 });
 
 export default function Footer() {
+  const router = useRouter();
+
   return (
     <footer
       className={`${montserrat.variable} ${antonio.variable} w-full bg-[#FAF9F6] text-neutral-800 pt-20 pb-8 px-6 sm:px-12 md:px-16 lg:px-24 relative z-30 font-(family-name:--font-montserrat) border-t border-neutral-200/50`}
     >
       <div className="max-w-7xl mx-auto flex flex-col justify-between h-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
-
+ 
           <div className="lg:col-span-5 flex flex-col sm:flex-row gap-6 items-start">
             <div className="w-28 sm:w-36 aspect-3/4 relative overflow-hidden rounded-sm bg-neutral-200 shrink-0 shadow-sm">
               <img
@@ -34,7 +37,10 @@ export default function Footer() {
               <p className="text-[11px] sm:text-xs text-neutral-500 leading-relaxed font-light tracking-[0.03em] max-w-xs">
                 Driven by a passion for cuisine and personalized AI culinary craft, we create custom cooking solutions designed to inspire kitchen experiences across the globe.
               </p>
-              <div className="mt-4 flex items-center gap-2 cursor-pointer group">
+              <div
+                onClick={() => router.push("/recipes")}
+                className="mt-4 flex items-center gap-2 cursor-pointer group"
+              >
                 <span className="text-[10px] sm:text-xs font-light tracking-[0.2em] uppercase text-neutral-900 transition-opacity duration-300 group-hover:opacity-75">
                   CATER CULINARY
                 </span>

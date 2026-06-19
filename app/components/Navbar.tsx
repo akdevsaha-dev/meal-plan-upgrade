@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Montserrat } from "next/font/google";
 import { useGSAP } from "@gsap/react";
+import { useRouter } from "next/navigation";
 import gsap from "gsap";
 
 const montserrat = Montserrat({
@@ -17,6 +18,7 @@ export const Navbar = ({ isRevealed = true }: { isRevealed?: boolean }) => {
   const linksRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
+  const router = useRouter();
 
   // Set initial state for navbar entrance
   useGSAP(() => {
@@ -145,7 +147,10 @@ export const Navbar = ({ isRevealed = true }: { isRevealed?: boolean }) => {
         className={`${montserrat.variable} fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 sm:px-12 md:px-16 lg:px-24 h-24 bg-linear-to-b from-black/60 to-transparent text-white`}
       >
         <div className="flex-1 flex justify-start">
-          <button className="border border-white/30 hover:bg-white/10 hover:border-white px-5 py-2 text-[10px] sm:text-xs tracking-[0.2em] font-light uppercase transition duration-300 bg-transparent cursor-pointer">
+          <button
+            onClick={() => router.push("/recipes")}
+            className="border border-white/30 hover:bg-white/10 hover:border-white px-5 py-2 text-[10px] sm:text-xs tracking-[0.2em] font-light uppercase transition duration-300 bg-transparent cursor-pointer"
+          >
             TRY NOW
           </button>
         </div>

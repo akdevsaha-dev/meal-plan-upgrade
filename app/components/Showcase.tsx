@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Montserrat } from "next/font/google";
+import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -17,6 +18,7 @@ export default function Showcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const tagRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // Entrance reveal timeline (triggers when content reaches 20% into the viewport)
@@ -131,7 +133,10 @@ export default function Showcase() {
         </p>
 
         {/* CTA Button Link */}
-        <div className="showcase-cta flex items-center gap-3 cursor-pointer group">
+        <div
+          onClick={() => router.push("/chat")}
+          className="showcase-cta flex items-center gap-3 cursor-pointer group"
+        >
           <span className="text-[10px] sm:text-xs font-semibold tracking-[0.2em] uppercase text-neutral-900 transition-opacity duration-300 group-hover:opacity-75">
             TRY AI GENERATOR
           </span>

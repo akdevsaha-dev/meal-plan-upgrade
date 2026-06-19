@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Montserrat } from "next/font/google";
+import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -19,6 +20,7 @@ export default function About() {
   const imgContainerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const tl = gsap.timeline({
@@ -95,7 +97,10 @@ export default function About() {
             Cater is a smart kitchen companion designed to elevate your daily culinary experience. A personalized AI chef focused on thoughtful cooking, where each generated recipe responds directly to your ingredients, dietary goals, and cravings.
           </p>
 
-          <div className="flex items-center gap-3 cursor-pointer group">
+          <div
+            onClick={() => router.push("/chat")}
+            className="flex items-center gap-3 cursor-pointer group"
+          >
             <span className="text-[10px] sm:text-xs font-light tracking-[0.2em] uppercase text-neutral-900 transition-opacity duration-300 group-hover:opacity-75">
               ABOUT OUR AI CHEF
             </span>
