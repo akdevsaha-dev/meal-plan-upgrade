@@ -18,13 +18,21 @@ export const Hero = ({ isRevealed = true }: { isRevealed?: boolean }) => {
   const line2 = "Crafted Just For You.";
 
   const splitText = (text: string) => {
-    return text.split("").map((char, index) => (
+    return text.split(" ").map((word, wordIndex) => (
       <span
-        key={index}
-        className="inline-block char transition-colors duration-300"
-        style={{ display: char === " " ? "inline" : "inline-block" }}
+        key={wordIndex}
+        className={`inline-flex mr-[0.27em] last:mr-0 ${
+          word.includes("You") ? "pl-[9px]" : ""
+        }`}
       >
-        {char === " " ? "\u00A0" : char}
+        {word.split("").map((char, charIndex) => (
+          <span
+            key={charIndex}
+            className="inline-block char transition-colors duration-300"
+          >
+            {char}
+          </span>
+        ))}
       </span>
     ));
   };

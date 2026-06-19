@@ -76,10 +76,6 @@ body {
   video {
     @apply w-full md:h-full h-1/2 absolute bottom-0 left-0 md:object-contain object-bottom object-cover;
   }
-
-  #art {
-    @apply relative w-full min-h-screen overflow-hidden bg-black text-white py-24 flex items-center justify-center;
-  }
 }
 
 html.lenis,

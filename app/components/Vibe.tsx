@@ -15,6 +15,7 @@ const montserrat = Montserrat({
 
 export const Vibe = () => {
   const section1Ref = useRef<HTMLDivElement>(null);
+  const subHeadline1Ref = useRef<HTMLDivElement>(null);
   const headline1Ref = useRef<HTMLHeadingElement>(null);
   const desc1Ref = useRef<HTMLDivElement>(null);
   const headline1FloatRef = useRef<HTMLSpanElement>(null);
@@ -30,30 +31,54 @@ export const Vibe = () => {
   const desc2FloatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const s1Tl = gsap.timeline({
+    // One-time opacity reveal trigger when section enters viewport
+    const s1RevealTl = gsap.timeline({
       scrollTrigger: {
         trigger: section1Ref.current,
-        start: "top 80%",
+        start: "top 95%",
         toggleActions: "play none none reverse",
       },
     });
 
-    s1Tl.fromTo(
-      headline1Ref.current,
-      { y: 40, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
-    ).fromTo(
-      desc1Ref.current,
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" },
-      "-=0.4"
+    s1RevealTl.fromTo(
+      [subHeadline1Ref.current, headline1Ref.current, desc1Ref.current],
+      { opacity: 0 },
+      { opacity: 1, duration: 0.8, stagger: 0.15, ease: "power2.out" }
     );
 
-    // Section 1 Background Parallax Scrub
+    // Scroll-driven Y parallax scrub (floating up relative to background)
+    const s1ParallaxTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: section1Ref.current,
+        start: "top bottom",
+        end: "bottom top",
+        scrub: 1.2,
+      },
+    });
+
+    s1ParallaxTl.fromTo(
+      subHeadline1Ref.current,
+      { y: 80 },
+      { y: -80, ease: "none" }
+    );
+    s1ParallaxTl.fromTo(
+      headline1Ref.current,
+      { y: 120 },
+      { y: -120, ease: "none" },
+      "<"
+    );
+    s1ParallaxTl.fromTo(
+      desc1Ref.current,
+      { y: 60 },
+      { y: -60, ease: "none" },
+      "<"
+    );
+
+    // Section 1 Background Parallax Scrub (starts immediately when entering viewport)
     const s1BgTl = gsap.timeline({
       scrollTrigger: {
         trigger: section1Ref.current,
-        start: "top top",
+        start: "top bottom",
         end: "bottom top",
         scrub: true,
       },
@@ -61,8 +86,8 @@ export const Vibe = () => {
 
     s1BgTl.fromTo(
       bgImg1Ref.current,
-      { yPercent: -8 },
-      { yPercent: 8, ease: "none" }
+      { yPercent: -12 },
+      { yPercent: 12, ease: "none" }
     );
 
     // Section 1 Idle Floating Loop
@@ -145,7 +170,8 @@ export const Vibe = () => {
     });
 
     return () => {
-      s1Tl.kill();
+      s1RevealTl.kill();
+      s1ParallaxTl.kill();
       s1BgTl.kill();
       s2ImgTl.kill();
       s2TextTl.kill();
@@ -172,7 +198,10 @@ export const Vibe = () => {
 
         <div className="absolute inset-0 bg-black/40 z-10" />
 
-        <div className="absolute top-20 left-6 sm:left-12 md:left-20 lg:left-28 z-20">
+        <div
+          ref={subHeadline1Ref}
+          className="absolute top-20 left-6 sm:left-12 md:left-20 lg:left-28 z-20"
+        >
           <span className="text-[10px] sm:text-xs tracking-[0.25em] text-white/80 font-light uppercase">
             FOOD AND DESSERT
           </span>
