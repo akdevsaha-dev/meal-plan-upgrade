@@ -10,7 +10,9 @@ interface SceneProps {
     fov?: number;
     modelScale?: number;
     modelPosition?: [number, number, number];
+    modelRotation?: [number, number, number];
     shadowPosition?: [number, number, number];
+    target?: [number, number, number];
 }
 
 export default function Scene({
@@ -18,26 +20,29 @@ export default function Scene({
     fov = 45,
     modelScale = 1.2,
     modelPosition = [0, -0.4, 0],
-    shadowPosition = [0, -0.45, 0]
+    modelRotation = [0, 0, 0],
+    shadowPosition = [0, -0.45, 0],
+    target = [0, 0, 0]
 }: SceneProps) {
     return (
-        <Canvas camera={{ position: cameraPosition, fov: fov }} dpr={[1, 2]}>
+        <Canvas camera={{ position: cameraPosition, fov: fov }} dpr={[1, 2]} shadows>
             {/* Ambient light - lower to keep shadows rich and realistic */}
-            <ambientLight intensity={0.4} />
+            <ambientLight intensity={0.45} />
 
             {/* Warm Key Light matching the table's background lighting direction (top-left/front) */}
             <directionalLight 
                 position={[-4, 6, 4]} 
-                intensity={3.5} 
+                intensity={3.2} 
                 color="#fff8f0" 
                 castShadow 
-                shadow-mapSize={[1024, 1024]}
+                shadow-mapSize={[2048, 2048]}
+                shadow-bias={-0.0001}
             />
 
             {/* Studio rim/backlight for highlight on food edges (top-right/back) */}
             <spotLight 
                 position={[5, 6, -3]} 
-                intensity={4.0} 
+                intensity={3.5} 
                 angle={0.4} 
                 penumbra={1} 
                 color="#ffffff"
@@ -46,12 +51,12 @@ export default function Scene({
             {/* Soft fill light from the right to soften dark shadows */}
             <pointLight 
                 position={[4, 2, 2]} 
-                intensity={1.5} 
+                intensity={1.2} 
                 color="#e6f0ff"
             />
 
             <Suspense fallback={null}>
-                <group position={modelPosition}>
+                <group position={modelPosition} rotation={modelRotation}>
                     <FoodPlater scale={modelScale} />
                     <ContactShadows
                         position={shadowPosition}
@@ -66,8 +71,12 @@ export default function Scene({
             <OrbitControls 
                 enableZoom={false}
                 enablePan={false}
-                maxPolarAngle={Math.PI / 2.15}
-                minPolarAngle={Math.PI / 6}
+                enableDamping
+                dampingFactor={0.08}
+                rotateSpeed={0.6}
+                target={target}
+                maxPolarAngle={Math.PI / 2.05}
+                minPolarAngle={Math.PI / 5}
                 makeDefault
             />
         </Canvas>

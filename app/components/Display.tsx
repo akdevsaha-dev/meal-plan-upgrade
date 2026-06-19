@@ -92,19 +92,12 @@ export const Display = () => {
       ease: "power2.out",
     });
 
-    // Tilt canvas container slightly
-    gsap.to(canvasContainerRef.current, {
-      rotationY: normalizedX * 10,
-      rotationX: -normalizedY * 10,
-      x: normalizedX * 15,
-      y: normalizedY * 15,
-      duration: 0.8,
-      ease: "power2.out",
-    });
+    // Note: the 3D plate container is intentionally NOT tilted by the mouse.
+    // The plate stays fixed and only rotates when the user drags it directly.
   };
 
   const onMouseLeave = () => {
-    gsap.to([leftTextRef.current, rightTextRef.current, canvasContainerRef.current], {
+    gsap.to([leftTextRef.current, rightTextRef.current], {
       x: 0,
       y: 0,
       rotationX: 0,
@@ -172,11 +165,12 @@ export const Display = () => {
         {/* The 3D Canvas Scene */}
         <div className="absolute inset-0 z-10 w-full h-full">
           <Scene
-            modelScale={2.5}
-            cameraPosition={[0, 1.15, 1.65]}
-            fov={42}
-            modelPosition={[0.28, -0.62, 0.15]}
-            shadowPosition={[0, -0.52, 0]}
+            modelScale={3.2}
+            cameraPosition={[0, 1.45, 2.3]}
+            fov={40}
+            modelPosition={[0, -0.5, 0]}
+            shadowPosition={[0, -0.58, 0]}
+            target={[0, -0.25, 0]}
           />
         </div>
       </div>
